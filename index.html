@@ -13,7 +13,6 @@
         .twitter-blue-text { color: #1d9bf0; }
         .twitter-hover:hover { background-color: #192734; }
         
-        /* カスタムスクロールバー（登録フォーム用） */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #192734; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #38444d; border-radius: 3px; }
@@ -24,8 +23,8 @@
     <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
         <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl">
             <div class="flex flex-col items-center space-y-3">
-                <img src="logo.jpg" alt="Loggia Logo" class="w-16 h-16 object-cover rounded-xl shadow-md" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=Loggia'">
-                <div class="text-4xl twitter-blue-text font-serif italic tracking-wider">Loggia</div>
+                <img src="logo.jpg" alt="Loggia Logo" class="w-16 h-16 object-cover rounded-xl shadow-md bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=Loggia'">
+                <div class="text-xl text-gray-300 font-serif italic tracking-widest">Loggia</div>
             </div>
             <p class="text-center text-gray-400 text-sm">インターネットの「いま」が集まる居間へようこそ。</p>
             
@@ -66,30 +65,30 @@
 
     <div class="w-full flex min-h-screen justify-start">
         
-        <header class="w-1/4 max-w-xs border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0">
+        <header class="w-1/5 max-w-[240px] border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0">
             <div class="space-y-6 text-xl font-bold">
                 <div class="flex items-center space-x-3 p-2">
-                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover rounded-lg shadow" onerror="this.src='https://placehold.co/50x50/000000/ffffff?text=L'">
-                    <div class="text-3xl twitter-blue-text font-serif italic tracking-wider">Loggia</div>
+                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover rounded-lg shadow bg-[#000000]" onerror="this.src='https://placehold.co/50x50/000000/ffffff?text=L'">
+                    <div class="text-xl text-gray-300 font-serif italic tracking-widest">Loggia</div>
                 </div>
                 
-                <nav class="space-y-2">
-                    <button onclick="switchTab('timeline')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-couch w-8 text-center mr-3"></i>居間 (ホーム)</button>
-                    <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-door-open w-8 text-center mr-3"></i>模様替え (設定)</button>
-                    <button onclick="handleLogout()" class="w-full text-left p-3 rounded-full text-red-400 twitter-hover cursor-pointer flex items-center"><i class="fas fa-sign-out-alt w-8 text-center mr-3"></i>退出する</button>
+                <nav class="space-y-2 text-[16px]">
+                    <button onclick="switchTab('timeline')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-couch w-8 text-center mr-2 text-gray-400"></i>居間</button>
+                    <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-door-open w-8 text-center mr-2 text-gray-400"></i>模様替え</button>
+                    <button onclick="handleLogout()" class="w-full text-left p-3 rounded-full text-red-400/80 twitter-hover cursor-pointer flex items-center"><i class="fas fa-sign-out-alt w-8 text-center mr-2"></i>退出</button>
                 </nav>
             </div>
             
-            <div class="flex items-center space-x-3 p-2 border mt-auto twitter-border rounded-full bg-[#192734]/30">
-                <div id="nav-avatar-container" class="w-10 h-10 flex-shrink-0"></div>
+            <div class="flex items-center space-x-2 p-2 border mt-auto twitter-border rounded-full bg-[#192734]/20 text-sm">
+                <div id="nav-avatar-container" class="w-8 h-8 flex-shrink-0"></div>
                 <div class="overflow-hidden">
                     <div id="nav-display-name" class="font-bold truncate">ゲスト</div>
-                    <div id="nav-username" class="text-gray-400 text-sm truncate">@guest</div>
+                    <div id="nav-username" class="text-gray-400 text-xs truncate">@guest</div>
                 </div>
             </div>
         </header>
 
-        <main class="flex-1 max-w-3xl border-r twitter-border min-h-screen pb-20 md:pb-0 md:ml-6">
+        <main class="flex-1 max-w-2xl border-l border-r twitter-border min-h-screen pb-20 md:pb-0 md:ml-24 lg:ml-40">
             
             <section id="tab-timeline" class="block">
                 <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
@@ -144,10 +143,10 @@
     </footer>
 
     <script>
-        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyI7WqAisMreI0GbykYgJ379fWun0XmE_1z4N73qg3Gj1rQ73O-C7A8z6IAtC3iI_I/exec';
+        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyCnsVLKorpz98tD-aycq2aodvafbMpCtjql-mGcFmi1HOA36cC8S3RAkZEqthbVbxk/exec';
 
         let currentUser = null;
-        let likedPosts = new Set(); // ローカルでのいいね状態保持用
+        let likedPosts = new Set();
 
         window.onload = function() {
             const cached = localStorage.getItem('loggia_user');
@@ -163,7 +162,6 @@
             };
         };
 
-        // 🔗 URL自動リンク化（警告ポップアップ付き）
         function linkify(text) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             return text.replace(urlRegex, function(url) {
@@ -177,7 +175,6 @@
             }
         }
 
-        // 📸 画像ファイルの「優しさプレビュー」処理
         function previewImage(input, previewId) {
             const preview = document.getElementById(previewId);
             const file = input.files[0];
@@ -235,7 +232,6 @@
             }
             if (!display_name) display_name = '新参者';
 
-            // 画像があればBase64化、なければデフォルトとして logo.jpg のパスを指定
             let icon_url = 'logo.jpg';
             if (iconFile) {
                 icon_url = await fileToBase64(iconFile);
@@ -286,9 +282,8 @@
         }
 
         function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") {
-            // URLが空、または初期値の場合はロゴ画像を割り当てる
             if (!url || url === 'logo.jpg') {
-                return `<img src="logo.jpg" class="${cssClass}" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`;
+                return `<img src="logo.jpg" class="${cssClass} bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`;
             }
             return `<img src="${url}" class="${cssClass}">`;
         }
@@ -394,7 +389,6 @@
             });
         }
 
-        // ❤️ いいね・取り消しのトグル処理（フロントエンド先行実装）
         function toggleLike(postId, buttonEl) {
             const heartIcon = buttonEl.querySelector('i');
             const countSpan = buttonEl.querySelector('span');
@@ -403,7 +397,6 @@
             const isDislike = likedPosts.has(postId);
             const targetAction = isDislike ? 'dislikePost' : 'likePost';
 
-            // 通信
             fetch(GAS_API_URL, { 
                 method: 'POST', 
                 body: JSON.stringify({ action: targetAction, postId: postId }) 
