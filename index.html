@@ -13,23 +13,10 @@
         .twitter-blue-text { color: #1d9bf0; }
         .twitter-hover:hover { background-color: #192734; }
         
-        /* 🎨 神ロゴのCSSアート（初期アイコンやヘッダー用） */
-        .loggia-logo-box {
-            position: relative; width: 44px; height: 50px; background: #000; border-radius: 8px; overflow: hidden; display: inline-block; flex-shrink: 0;
-        }
-        .logo-circle-1 { position: absolute; width: 24px; height: 24px; border-radius: 50%; background: #3b52d9; left: 2px; top: 12px; opacity: 0.8; }
-        .logo-circle-2 { position: absolute; width: 24px; height: 24px; border-radius: 50%; background: #2660d9; right: 2px; top: 12px; opacity: 0.8; }
-        .logo-line-l { position: absolute; width: 4px; height: 28px; background: #6891e8; left: 6px; top: 6px; }
-        .logo-line-l-bot { position: absolute; width: 16px; height: 4px; background: #6891e8; left: 6px; top: 30px; }
-        .logo-line-g1 { position: absolute; width: 4px; height: 16px; background: #8896f2; left: 18px; top: 28px; }
-        .logo-line-g1-bot { position: absolute; width: 14px; height: 4px; background: #8896f2; left: 8px; top: 40px; }
-        .logo-line-g2 { position: absolute; width: 18px; height: 4px; background: #6b86db; right: 6px; top: 8px; transform: rotate(-5deg); }
-        .logo-line-i { position: absolute; width: 4px; height: 18px; background: #7c9df2; right: 4px; top: 4px; }
-        .logo-dot-i { position: absolute; width: 4px; height: 4px; background: #7c9df2; right: 4px; top: 0px; }
-        .logo-line-a { position: absolute; width: 4px; height: 10px; background: #5575cc; right: 6px; top: 26px; }
-
-        /* ロゴ型枠（プレースホルダー用SVG） */
-        .default-logo-svg { background-color: #0b141c; padding: 4px; border-radius: 50%; }
+        /* カスタムスクロールバー（登録フォーム用） */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #192734; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #38444d; border-radius: 3px; }
     </style>
 </head>
 <body class="font-sans">
@@ -37,15 +24,10 @@
     <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
         <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl">
             <div class="flex flex-col items-center space-y-3">
-                <div class="loggia-logo-box">
-                    <div class="logo-circle-1"></div><div class="logo-circle-2"></div>
-                    <div class="logo-line-l"></div><div class="logo-line-l-bot"></div>
-                    <div class="logo-line-g1"></div><div class="logo-line-g1-bot"></div>
-                    <div class="logo-line-g2"></div><div class="logo-line-i"></div><div class="logo-dot-i"></div>
-                    <div class="logo-line-a"></div>
-                </div>
+                <img src="logo.jpg" alt="Loggia Logo" class="w-16 h-16 object-cover rounded-xl shadow-md" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=Loggia'">
                 <div class="text-4xl twitter-blue-text font-serif italic tracking-wider">Loggia</div>
             </div>
+            <p class="text-center text-gray-400 text-sm">インターネットの「いま」が集まる居間へようこそ。</p>
             
             <div class="flex border-b twitter-border text-center">
                 <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 border-transparent twitter-blue-text !border-[#1d9bf0]">ログイン</button>
@@ -58,7 +40,7 @@
                 <button onclick="handleLogin()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">居間に入る</button>
             </div>
 
-            <div id="form-register" class="space-y-4 hidden h-[400px] overflow-y-auto pr-1">
+            <div id="form-register" class="space-y-4 hidden h-[400px] overflow-y-auto pr-1 custom-scroll">
                 <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <input type="password" id="reg-password-confirm" placeholder="パスワードの確認 (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
@@ -67,39 +49,38 @@
                     <input type="date" id="reg-birth" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none text-gray-400">
                 </div>
                 <input type="text" id="reg-username" placeholder="住人ID (英数字・必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                <input type="text" id="reg-display" placeholder="表札の名前 (空欄だと新参者)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
+                <input type="text" id="reg-display" placeholder="表札の名前 (空欄の場合は新参者)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 
-                <div>
-                    <label class="text-xs text-gray-400 block mb-1">アイコン画像（未選択なら公式ロゴになります）</label>
-                    <input type="file" id="reg-icon-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700">
+                <div class="bg-[#15202b] p-3 rounded border twitter-border space-y-3">
+                    <label class="text-xs text-gray-400 block">アイコン画像（未選択の場合はデフォルトになります）</label>
+                    <div class="flex items-center space-x-4">
+                        <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
+                        <img id="reg-preview" src="logo.jpg" class="w-12 h-12 rounded-full object-cover border twitter-border hidden">
+                    </div>
                 </div>
                 
-                <button onclick="handleRegister()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">いまに飛び込む</button>
+                <button onclick="handleRegister()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">アカウントを作成して入居</button>
             </div>
         </div>
     </div>
 
     <div class="w-full flex min-h-screen justify-start">
         
-        <header class="w-72 border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0">
-            <div class="space-y-5 text-xl font-bold">
+        <header class="w-1/4 max-w-xs border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0">
+            <div class="space-y-6 text-xl font-bold">
                 <div class="flex items-center space-x-3 p-2">
-                    <div class="loggia-logo-box">
-                        <div class="logo-circle-1"></div><div class="logo-circle-2"></div>
-                        <div class="logo-line-l"></div><div class="logo-line-l-bot"></div>
-                        <div class="logo-line-g1"></div><div class="logo-line-g1-bot"></div>
-                        <div class="logo-line-g2"></div><div class="logo-line-i"></div><div class="logo-dot-i"></div>
-                        <div class="logo-line-a"></div>
-                    </div>
+                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover rounded-lg shadow" onerror="this.src='https://placehold.co/50x50/000000/ffffff?text=L'">
                     <div class="text-3xl twitter-blue-text font-serif italic tracking-wider">Loggia</div>
                 </div>
                 
-                <button onclick="switchTab('timeline')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer"><i class="fas fa-couch mr-4"></i>居間 (ホーム)</button>
-                <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer"><i class="fas fa-door-open mr-4"></i>模様替え (設定)</button>
-                <button onclick="handleLogout()" class="w-full text-left p-3 rounded-full text-red-400 twitter-hover cursor-pointer"><i class="fas fa-sign-out-alt mr-4"></i>退出する</button>
+                <nav class="space-y-2">
+                    <button onclick="switchTab('timeline')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-couch w-8 text-center mr-3"></i>居間 (ホーム)</button>
+                    <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-door-open w-8 text-center mr-3"></i>模様替え (設定)</button>
+                    <button onclick="handleLogout()" class="w-full text-left p-3 rounded-full text-red-400 twitter-hover cursor-pointer flex items-center"><i class="fas fa-sign-out-alt w-8 text-center mr-3"></i>退出する</button>
+                </nav>
             </div>
             
-            <div class="flex items-center space-x-3 p-2 border mt-auto twitter-border rounded-full">
+            <div class="flex items-center space-x-3 p-2 border mt-auto twitter-border rounded-full bg-[#192734]/30">
                 <div id="nav-avatar-container" class="w-10 h-10 flex-shrink-0"></div>
                 <div class="overflow-hidden">
                     <div id="nav-display-name" class="font-bold truncate">ゲスト</div>
@@ -108,7 +89,7 @@
             </div>
         </header>
 
-        <main class="flex-1 max-w-2xl border-r twitter-border min-h-screen pb-16 md:pb-0">
+        <main class="flex-1 max-w-3xl border-r twitter-border min-h-screen pb-20 md:pb-0 md:ml-6">
             
             <section id="tab-timeline" class="block">
                 <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
@@ -116,50 +97,57 @@
                     <span class="text-xs font-normal text-gray-400">インターネットの居間と今</span>
                 </div>
                 
-                <div class="border-b twitter-border p-4 flex space-x-3">
+                <div class="border-b twitter-border p-4 flex space-x-3 bg-[#192734]/10">
                     <div id="form-avatar-container" class="w-12 h-12 flex-shrink-0"></div>
                     <div class="flex-1">
-                        <textarea id="post-message" placeholder="いまどうしてる？" class="w-full bg-transparent text-xl outline-none resize-none h-24" maxlength="140"></textarea>
+                        <textarea id="post-message" placeholder="いまどうしてる？" class="w-full bg-transparent text-xl outline-none resize-none h-24 pt-1" maxlength="140"></textarea>
                         <div class="flex justify-between items-center pt-2 border-t twitter-border mt-2">
                             <span class="text-sm text-gray-500" id="char-count">0 / 140</span>
                             <button onclick="submitPost()" class="twitter-blue text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90">届け！</button>
                         </div>
                     </div>
                 </div>
-                <div id="timeline-loading" class="p-8 text-center text-gray-400"><i class="fas fa-spinner animate-spin mr-2"></i>居間をのぞき中...</div>
+                <div id="timeline-loading" class="p-8 text-center text-gray-400"><i class="fas fa-spinner animate-spin mr-2"></i>居間を読み込み中...</div>
                 <div id="timeline-posts" class="divide-y twitter-border"></div>
             </section>
 
-            <section id="tab-profile-edit" class="hidden p-4">
-                <div class="font-bold text-xl mb-6 border-b twitter-border pb-2">自室の模様替え（設定）</div>
-                <div class="space-y-4 max-w-md">
+            <section id="tab-profile-edit" class="hidden p-6">
+                <div class="font-bold text-xl mb-6 border-b twitter-border pb-2">自室の模様替え（プロフィール設定）</div>
+                <div class="space-y-5 max-w-md">
                     <div>
                         <label class="block text-gray-400 text-sm mb-1">表札の名前（表示名）</label>
-                        <input type="text" id="edit-display-name" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none">
+                        <input type="text" id="edit-display-name" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none focus:border-[#1d9bf0]">
                     </div>
-                    <div>
-                        <label class="block text-gray-400 text-sm mb-1">新しいアイコン画像（添付）</label>
-                        <input type="file" id="edit-icon-file" accept="image/*" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700">
+                    
+                    <div class="bg-[#192734]/40 p-4 rounded-xl border twitter-border space-y-3">
+                        <label class="block text-gray-400 text-sm">新しいアイコン画像（添付）</label>
+                        <div class="flex items-center space-x-4">
+                            <input type="file" id="edit-icon-file" accept="image/*" onchange="previewImage(this, 'edit-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
+                            <img id="edit-preview" src="" class="w-14 h-14 rounded-full object-cover border twitter-border hidden">
+                        </div>
                     </div>
+
                     <div>
                         <label class="block text-gray-400 text-sm mb-1">自己紹介・部屋の説明</label>
-                        <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none h-24 resize-none"></textarea>
+                        <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none h-24 resize-none focus:border-[#1d9bf0]"></textarea>
                     </div>
-                    <button onclick="saveProfile()" class="twitter-blue text-white font-bold px-6 py-2 rounded-full cursor-pointer hover:opacity-90">模様替えを保存</button>
+                    <button onclick="saveProfile()" class="twitter-blue text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">模様替えを保存</button>
                 </div>
             </section>
         </main>
     </div>
 
+    <footer class="fixed bottom-0 left-0 right-0 bg-[#15202b]/95 backdrop-blur border-t border-[#38444d] flex justify-around p-3 md:hidden z-20 shadow-lg">
+        <button onclick="switchTab('timeline')" class="text-2xl text-gray-400 focus:text-white active:text-white px-4 py-1"><i class="fas fa-couch"></i></button>
+        <button onclick="switchTab('profile-edit')" class="text-2xl text-gray-400 focus:text-white active:text-white px-4 py-1"><i class="fas fa-door-open"></i></button>
+        <button onclick="handleLogout()" class="text-2xl text-red-400/80 active:text-red-400 px-4 py-1"><i class="fas fa-sign-out-alt"></i></button>
+    </footer>
+
     <script>
-        // 🛠️ あなたのGASウェブアプリURLをここに！
-        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyCnsVLKorpz98tD-aycq2aodvafbMpCtjql-mGcFmi1HOA36cC8S3RAkZEqthbVbxk/exec';
+        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyI7WqAisMreI0GbykYgJ379fWun0XmE_1z4N73qg3Gj1rQ73O-C7A8z6IAtC3iI_I/exec';
 
         let currentUser = null;
-        let likedPosts = new Set(); // 連打バズ防止用のローカル記憶
-
-        // 🖼️ 神ロゴをBase64化した代替データ（画像未設定時のデフォルト）
-        const DEFAULT_LOGO_BASE64 = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000' rx='15'/><circle cx='35' cy='50' r='25' fill='%233b52d9' opacity='0.8'/><circle cx='65' cy='50' r='25' fill='%232660d9' opacity='0.8'/><rect x='20' y='20' width='8' height='50' fill='%236891e8'/><rect x='20' y='62' width='30' height='8' fill='%236891e8'/><rect x='45' y='55' width='8' height='25' fill='%238896f2'/><rect x='30' y='75' width='23' height='8' fill='%238896f2'/><rect x='50' y='25' width='30' height='8' fill='%236b86db'/><rect x='75' y='20' width='8' height='30' fill='%237c9df2'/><circle cx='79' cy='12' r='4' fill='%237c9df2'/></svg>";
+        let likedPosts = new Set(); // ローカルでのいいね状態保持用
 
         window.onload = function() {
             const cached = localStorage.getItem('loggia_user');
@@ -175,7 +163,7 @@
             };
         };
 
-        // 🔗 URLを自動リンク化し、警告ポップアップを仕込む関数
+        // 🔗 URL自動リンク化（警告ポップアップ付き）
         function linkify(text) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             return text.replace(urlRegex, function(url) {
@@ -183,14 +171,29 @@
             });
         }
 
-        // 🚨 安心の安全確認おまじない
         function safeNavigate(url) {
-            if (confirm(`⚠️ ちょっと待って！\n\nLoggiaの居間から飛び出して、次の外部サイトへ移動しようとしています。よろしいですか？\n\n移動先:\n${url}`)) {
+            if (confirm(`【外部サイトへの移動確認】\n\nLoggiaを離れ、次のURLへ移動しようとしています。よろしいですか？\n\n移動先:\n${url}`)) {
                 window.open(url, '_blank', 'noopener,noreferrer');
             }
         }
 
-        // 📸 ファイルをBase64文字列に変換するツール
+        // 📸 画像ファイルの「優しさプレビュー」処理
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "";
+                preview.classList.add('hidden');
+            }
+        }
+
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 if (!file) resolve('');
@@ -225,15 +228,15 @@
             const iconFile = document.getElementById('reg-icon-file').files[0];
 
             if (!email || !password || !passwordConfirm || !birthday || !username) {
-                alert('必須項目が空欄だっぴ！'); return;
+                alert('必須項目が入力されていません。'); return;
             }
             if (password !== passwordConfirm) {
-                alert('確認パスワードがズレてるよ！'); return;
+                alert('確認用パスワードが一致しません。'); return;
             }
             if (!display_name) display_name = '新参者';
 
-            // 画像があればBase64化、なければ神ロゴをセット
-            let icon_url = DEFAULT_LOGO_BASE64;
+            // 画像があればBase64化、なければデフォルトとして logo.jpg のパスを指定
+            let icon_url = 'logo.jpg';
             if (iconFile) {
                 icon_url = await fileToBase64(iconFile);
             }
@@ -245,7 +248,7 @@
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
-                    alert('Loggiaへようこそ！ 🎉');
+                    alert('Loggiaへの入居登録が完了しました。');
                     loginSuccess(res.user);
                 } else {
                     alert('登録エラー: ' + res.error);
@@ -283,8 +286,9 @@
         }
 
         function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") {
-            if (!url || url === 'DEFAULT_LOGO' || url.startsWith('data:image/svg+xml')) {
-                return `<img src="${DEFAULT_LOGO_BASE64}" class="${cssClass} default-logo-svg">`;
+            // URLが空、または初期値の場合はロゴ画像を割り当てる
+            if (!url || url === 'logo.jpg') {
+                return `<img src="logo.jpg" class="${cssClass}" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`;
             }
             return `<img src="${url}" class="${cssClass}">`;
         }
@@ -308,6 +312,12 @@
                 document.getElementById('tab-profile-edit').classList.remove('hidden');
                 document.getElementById('edit-display-name').value = currentUser.display_name || '';
                 document.getElementById('edit-bio').value = currentUser.bio || '';
+                
+                const preview = document.getElementById('edit-preview');
+                if (currentUser.icon_url) {
+                    preview.src = currentUser.icon_url;
+                    preview.classList.remove('hidden');
+                }
             }
         }
 
@@ -331,9 +341,7 @@
             posts.forEach(post => {
                 const avatarHtml = getAvatarHtml(post.icon_url, "w-12 h-12 rounded-full object-cover flex-shrink-0");
                 const hasLiked = likedPosts.has(post.id);
-                
-                // メッセージ部分を自動リンク化
-                const formattedMessage = linkify(post.message);
+                const formattedMessage = linkify(post.message || '');
 
                 const postHtml = `
                     <div class="p-4 twitter-hover flex space-x-3 transition">
@@ -345,19 +353,19 @@
                                 <span class="text-gray-500">·</span>
                                 <span class="text-gray-500 text-xs">${post.timestamp}</span>
                             </div>
-                            <div class="text-white mt-1 break-words whitespace-pre-wrap">${formattedMessage}</div>
+                            <div class="text-white mt-1 break-words whitespace-pre-wrap text-[15px]">${formattedMessage}</div>
                             
                             <div class="flex justify-between max-w-md mt-3 text-gray-500 text-sm">
-                                <button onclick="alert('返信機能（バックエンド）次回実装！')" class="hover:text-[#1d9bf0] transition cursor-pointer">
+                                <button onclick="alert('次回、返信のバックエンド機能を統合します。')" class="hover:text-[#1d9bf0] transition cursor-pointer">
                                     <i class="far fa-comment mr-2"></i><span>0</span>
                                 </button>
-                                <button onclick="alert('リポスト機能（バックエンド）次回実装！')" class="hover:text-green-500 transition cursor-pointer">
+                                <button onclick="alert('次回、リポストのバックエンド機能を統合します。')" class="hover:text-green-500 transition cursor-pointer">
                                     <i class="fas fa-retweet mr-2"></i><span>0</span>
                                 </button>
-                                <button onclick="alert('引用ポスト次回実装！')" class="hover:text-amber-500 transition cursor-pointer">
+                                <button onclick="alert('次回、引用ポストのバックエンド機能を統合します。')" class="hover:text-amber-500 transition cursor-pointer">
                                     <i class="far fa-sticky-note mr-2"></i><span>0</span>
                                 </button>
-                                <button onclick="likePost('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}">
+                                <button onclick="toggleLike('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}">
                                     <i class="${hasLiked ? 'fas' : 'far'} fa-heart mr-2"></i><span>${post.likes || 0}</span>
                                 </button>
                             </div>
@@ -380,37 +388,44 @@
             .then(res => {
                 if (res.success) {
                     textarea.value = '';
+                    document.getElementById('char-count').innerText = "0 / 140";
                     loadTimeline();
                 }
             });
         }
 
-        // ❤️ 連打バズ防止ロック付きいいねボタン
-        function likePost(postId, buttonEl) {
-            if (likedPosts.has(postId)) {
-                alert("おっと、同じ投稿には1回しか「いいね」できない仕様にロックしたっぴ！悪質な万バズは許さないっぴ。");
-                return;
-            }
-
+        // ❤️ いいね・取り消しのトグル処理（フロントエンド先行実装）
+        function toggleLike(postId, buttonEl) {
             const heartIcon = buttonEl.querySelector('i');
             const countSpan = buttonEl.querySelector('span');
+            let currentCount = parseInt(countSpan.innerText) || 0;
             
+            const isDislike = likedPosts.has(postId);
+            const targetAction = isDislike ? 'dislikePost' : 'likePost';
+
+            // 通信
             fetch(GAS_API_URL, { 
                 method: 'POST', 
-                body: JSON.stringify({ action: 'likePost', postId }) 
+                body: JSON.stringify({ action: targetAction, postId: postId }) 
             })
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
-                    likedPosts.add(postId);
-                    countSpan.innerText = res.newLikes;
-                    heartIcon.className = 'fas fa-heart text-pink-500';
-                    buttonEl.classList.add('text-pink-500');
+                    if (isDislike) {
+                        likedPosts.delete(postId);
+                        heartIcon.className = 'far fa-heart mr-2';
+                        buttonEl.classList.remove('text-pink-500');
+                        countSpan.innerText = res.newLikes !== undefined ? res.newLikes : currentCount - 1;
+                    } else {
+                        likedPosts.add(postId);
+                        heartIcon.className = 'fas fa-heart text-pink-500 mr-2';
+                        buttonEl.classList.add('text-pink-500');
+                        countSpan.innerText = res.newLikes !== undefined ? res.newLikes : currentCount + 1;
+                    }
                 }
             });
         }
 
-        // 🎨 プロフィール変更（画像添付対応）
         async function saveProfile() {
             const displayName = document.getElementById('edit-display-name').value.trim();
             const bio = document.getElementById('edit-bio').value.trim();
@@ -433,7 +448,7 @@
                     currentUser.bio = bio;
                     localStorage.setItem('loggia_user', JSON.stringify(currentUser));
                     updateUserUI();
-                    alert('自室の模様替えが完了したっぴ！🪚');
+                    alert('プロフィールの更新が完了しました。');
                     switchTab('timeline');
                 }
             });
