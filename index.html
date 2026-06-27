@@ -19,7 +19,7 @@
     <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
         <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl">
             <div class="text-4xl text-center twitter-blue-text font-serif italic">Loggia</div>
-            <p class="text-center text-gray-400 text-sm">インターネットの居間へようこそ</p>
+            <p class="text-center text-gray-400 text-sm">さて、ここがインターネットの「いま」です、自由にくつろいでね。</p>
             
             <div class="flex border-b twitter-border text-center">
                 <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 border-transparent twitter-blue-text !border-[#1d9bf0]">ログイン</button>
@@ -33,7 +33,7 @@
             </div>
 
             <div id="form-register" class="space-y-4 hidden h-[400px] overflow-y-auto pr-1">
-                <p class="text-xs text-orange-400">*必須項目を入力してくださいっぴ</p>
+                <p class="text-xs text-orange-400">*必須項目を入力してね！</p>
                 <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <div>
@@ -43,7 +43,7 @@
                 <input type="text" id="reg-username" placeholder="住人ID (英数字・必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <input type="text" id="reg-display" placeholder="表札の名前 (空欄ならGuest)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <input type="text" id="reg-icon" placeholder="アイコン画像URL (任意)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                <button onclick="handleRegister()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">新生活を始める</button>
+                <button onclick="handleRegister()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">いまに飛び込む</button>
             </div>
         </div>
     </div>
@@ -157,7 +157,7 @@
             const icon_url = document.getElementById('reg-icon').value.trim();
 
             if (!email || !password || !birthdate || !username) {
-                alert('必須項目が埋まっていないっぴ！');
+                alert('必須項目が埋まっていないよ！');
                 return;
             }
 
@@ -165,10 +165,10 @@
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
-                    alert('入居申し込みが完了したっぴ！');
+                    alert('入居申し込みが完了したよ！');
                     loginSuccess(res.user);
                 } else {
-                    alert('登録エラーだっぴ：' + res.error);
+                    alert('あれ、登録に問題が発生したようです...(管理者案件)：' + res.error);
                 }
             });
         }
@@ -185,7 +185,7 @@
                 if (res.success) {
                     loginSuccess(res.user);
                 } else {
-                    alert('エラーだっぴ：' + res.error);
+                    alert('エラーだっぴ！！：' + res.error);
                 }
             });
         }
@@ -311,7 +311,7 @@
                     currentUser.bio = bio;
                     localStorage.setItem('loggia_user', JSON.stringify(currentUser));
                     updateUserUI();
-                    alert('模様替えを保存したっぴ！');
+                    alert('模様替えを保存した！');
                     switchTab('timeline');
                 }
             });
