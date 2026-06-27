@@ -12,7 +12,6 @@
     <style>
         body { background-color: #15202b; color: #fff; }
         .twitter-border { border-color: #38444d; }
-        /* 🎨 メメインカラーコードを #5999FF に統一 */
         .brand-color-bg { background-color: #5999FF; }
         .brand-color-text { color: #5999FF; }
         .twitter-hover:hover { background-color: #192734; }
@@ -27,7 +26,7 @@
     <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
         <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl">
             <div class="flex flex-col items-center space-y-3">
-                <img src="logo.jpg" alt="Loggia Logo" class="w-16 h-16 object-cover rounded-xl shadow-md bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=Loggia'">
+                <img src="logo.jpg" alt="Loggia Logo" class="w-20 h-20 object-cover shadow-md bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=Loggia'">
                 <div class="text-2xl font-light tracking-widest font-sans text-gray-200">Loggia</div>
             </div>
             <p class="text-center text-gray-400 text-sm">インターネットの「いま」が集まる居間へようこそ。</p>
@@ -55,7 +54,7 @@
                 <input type="text" id="reg-display" placeholder="表札の名前 (空欄の場合は新参者)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 
                 <div class="bg-[#15202b] p-3 rounded border twitter-border space-y-3">
-                    <label class="text-xs text-gray-400 block">アイコン画像（未選択の場合はデフォルトになります）</label>
+                    <label class="text-xs text-gray-400 block">アイコン画像（未選択の場合はデフォルト）</label>
                     <div class="flex items-center space-x-4">
                         <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
                         <img id="reg-preview" src="logo.jpg" class="w-12 h-12 rounded-full object-cover border twitter-border hidden">
@@ -67,12 +66,12 @@
         </div>
     </div>
 
-    <div class="w-full flex min-h-screen justify-end pr-4 md:pr-12 lg:pr-32">
+    <div class="w-full flex min-h-screen">
         
-        <header class="w-1/5 max-w-[240px] border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0">
+        <header class="w-64 border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0 z-30">
             <div class="space-y-6 text-xl font-bold">
                 <div class="flex items-center space-x-3 p-2">
-                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover rounded-lg shadow bg-[#000000]" onerror="this.src='https://placehold.co/50x50/000000/ffffff?text=L'">
+                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover shadow bg-[#000000]" onerror="this.src='https://placehold.co/50x50/000000/ffffff?text=L'">
                     <div class="text-lg font-light tracking-widest font-sans text-gray-300">Loggia</div>
                 </div>
                 
@@ -92,11 +91,16 @@
             </div>
         </header>
 
-        <main class="flex-1 max-w-3xl border-l border-r twitter-border min-h-screen pb-20 md:pb-0">
+        <main class="flex-1 max-w-4xl border-r twitter-border min-h-screen pb-20 md:pb-0 ml-auto md:ml-0">
             
             <section id="tab-timeline" class="block">
                 <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
-                    <span>Loggia の「今」</span>
+                    <div class="flex items-center space-x-3">
+                        <span>Loggia の「今」</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20 animate-pulse">
+                          <span class="w-1.5 h-1.5 mr-1.5 bg-green-400 rounded-full"></span>自動同期中
+                        </span>
+                    </div>
                     <span class="text-xs font-normal text-gray-400">インターネットの居間と今</span>
                 </div>
                 
@@ -110,7 +114,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="timeline-loading" class="p-8 text-center text-gray-400"><i class="fas fa-spinner animate-spin mr-2"></i>居間を読み込み中...</div>
+                <div id="timeline-loading" class="p-8 text-center text-gray-400"><i class="fas fa-spinner animate-spin mr-2"></i>居間をのぞき中...</div>
                 <div id="timeline-posts" class="divide-y twitter-border"></div>
             </section>
 
@@ -150,6 +154,7 @@
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyCnsVLKorpz98tD-aycq2aodvafbMpCtjql-mGcFmi1HOA36cC8S3RAkZEqthbVbxk/exec';
 
         let currentUser = null;
+        let autoRefreshInterval = null; // 🛠️ リアルタイム動作用タイマー
 
         window.onload = function() {
             const cached = localStorage.getItem('loggia_user');
@@ -157,6 +162,7 @@
                 currentUser = JSON.parse(cached);
                 updateUserUI();
                 loadTimeline();
+                startAutoRefresh(); // 🛠️ 自動同期スタート
             } else {
                 document.getElementById('auth-gate').classList.remove('hidden');
             }
@@ -164,6 +170,17 @@
                 document.getElementById('char-count').innerText = this.value.length + " / 140";
             };
         };
+
+        // 🛠️ 10秒ごとに居間の「今」を自動でバックグラウンド更新する機能
+        function startAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(() => {
+                // タイムラインタブが表示されている時だけリロード（模様替え中は邪魔しない）
+                if (!document.getElementById('tab-timeline').classList.contains('hidden')) {
+                    silentLoadTimeline();
+                }
+            }, 10000); // 10秒
+        }
 
         function linkify(text) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -277,9 +294,11 @@
             document.getElementById('auth-gate').classList.add('hidden');
             updateUserUI();
             loadTimeline();
+            startAutoRefresh();
         }
 
         function handleLogout() {
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
             localStorage.removeItem('loggia_user');
             location.reload();
         }
@@ -322,11 +341,20 @@
         function loadTimeline() {
             if (!currentUser) return;
             document.getElementById('timeline-loading').classList.remove('hidden');
-            // 🛠️ 自分がどれをいいねしているか取得するためにusernameをパラメータに付与
             fetch(`${GAS_API_URL}?action=getTimeline&username=${currentUser.username}`)
             .then(res => res.json())
             .then(res => {
                 document.getElementById('timeline-loading').classList.add('hidden');
+                if (res.success) { renderTimeline(res.data); }
+            });
+        }
+
+        // 🛠️ 自動同期用の静かなるローダー（ローディングをぐるぐるさせない）
+        function silentLoadTimeline() {
+            if (!currentUser) return;
+            fetch(`${GAS_API_URL}?action=getTimeline&username=${currentUser.username}`)
+            .then(res => res.json())
+            .then(res => {
                 if (res.success) { renderTimeline(res.data); }
             });
         }
@@ -340,8 +368,6 @@
             }
             posts.forEach(post => {
                 const avatarHtml = getAvatarHtml(post.icon_url, "w-12 h-12 rounded-full object-cover flex-shrink-0");
-                
-                // 🛠️ GASから帰ってきた「自分がいいねしているか」のフラグをそのまま判定に使用
                 const hasLiked = post.isLiked === true;
                 const formattedMessage = linkify(post.message || '');
 
@@ -359,17 +385,17 @@
                             
                             <div class="flex justify-between max-w-md mt-3 text-gray-500 text-sm">
                                 <button onclick="alert('次回、返信のバックエンド機能を統合します。')" class="hover:text-[#5999FF] transition cursor-pointer">
-                                    <i class="far fa-comment mr-2"></i><span>0</span>
+                                    <i class="far fa-comment mr-1"></i><span>0</span>
                                 </button>
                                 <button onclick="alert('次回、リポストのバックエンド機能を統合します。')" class="hover:text-green-500 transition cursor-pointer">
-                                    <i class="fas fa-retweet mr-2"></i><span>0</span>
-                                </button>
-                                <button onclick="alert('次回、引用ポストのバックエンド機能を統合します。')" class="hover:text-amber-500 transition cursor-pointer">
-                                    <i class="far fa-sticky-note mr-2"></i><span>0</span>
+                                    <i class="fas fa-retweet mr-1"></i><span>0</span>
                                 </button>
                                 <button onclick="toggleLike('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}" data-liked="${hasLiked}">
-                                    <i class="${hasLiked ? 'fas' : 'far'} fa-heart mr-2"></i><span>${post.likes || 0}</span>
+                                    <i class="${hasLiked ? 'fas' : 'far'} fa-heart mr-1"></i><span>${post.likes || 0}</span>
                                 </button>
+                                <div class="text-gray-600 flex items-center select-none">
+                                    <i class="far fa-chart-bar mr-1"></i><span>${post.views || 0}</span>
+                                </div>
                             </div>
                         </div>
                     </div>`;
@@ -396,35 +422,30 @@
             });
         }
 
-        // ❤️ データベース連動型・完全トグルいいねシステム
+        // ❤️ カンマ区切り完全トグルいいねシステム
         function toggleLike(postId, buttonEl) {
             const heartIcon = buttonEl.querySelector('i');
             const countSpan = buttonEl.querySelector('span');
             
-            // 現在の状態を属性から確実に取得
             const isCurrentlyLiked = buttonEl.getAttribute('data-liked') === 'true';
-            const targetAction = isCurrentlyLiked ? 'dislikePost' : 'likePost';
-
-            // ボタンを一瞬無効化して連打バグを防止
             buttonEl.style.pointerEvents = 'none';
 
             fetch(GAS_API_URL, { 
                 method: 'POST', 
-                body: JSON.stringify({ action: targetAction, postId: postId, username: currentUser.username }) 
+                body: JSON.stringify({ action: 'toggleLike', postId: postId, username: currentUser.username }) 
             })
             .then(res => res.json())
             .then(res => {
                 buttonEl.style.pointerEvents = 'auto';
                 if (res.success) {
-                    const nextState = !isCurrentlyLiked;
-                    buttonEl.setAttribute('data-liked', String(nextState));
-                    countSpan.innerText = res.newLikes;
+                    buttonEl.setAttribute('data-liked', String(res.isLiked));
+                    countSpan.innerText = res.likesCount;
 
-                    if (nextState) {
-                        heartIcon.className = 'fas fa-heart text-pink-500 mr-2';
+                    if (res.isLiked) {
+                        heartIcon.className = 'fas fa-heart text-pink-500 mr-1';
                         buttonEl.classList.add('text-pink-500');
                     } else {
-                        heartIcon.className = 'far fa-heart mr-2';
+                        heartIcon.className = 'far fa-heart mr-1';
                         buttonEl.classList.remove('text-pink-500');
                     }
                 }
