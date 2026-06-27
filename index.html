@@ -19,7 +19,7 @@
     <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
         <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl">
             <div class="text-4xl text-center twitter-blue-text font-serif italic">Loggia</div>
-            <p class="text-center text-gray-400 text-sm">インターネットの「いま」ちょっと見よ？</p>
+            <p class="text-center text-gray-400 text-sm">ここがインターネットの「いま」ちょっと見てみる？。</p>
             
             <div class="flex border-b twitter-border text-center">
                 <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 border-transparent twitter-blue-text !border-[#1d9bf0]">ログイン</button>
@@ -35,7 +35,6 @@
             <div id="form-register" class="space-y-4 hidden h-[400px] overflow-y-auto pr-1">
                 <p class="text-xs text-orange-400">*必須項目を入力してね！</p>
                 <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                
                 <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <input type="password" id="reg-password-confirm" placeholder="パスワードの確認 (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 
@@ -70,6 +69,7 @@
         </header>
 
         <main class="flex-1 border-r twitter-border min-h-screen pb-16 md:pb-0">
+            
             <section id="tab-timeline" class="block">
                 <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
                     <span>Loggia の「今」</span>
@@ -117,26 +117,46 @@
     </div>
 
     <script>
-        // 🚨【超重要】ここにあなたのGASの「ウェブアプリURL」を貼り付けてください！
+        // 🛠️【設定箇所 1】GASウェブアプリのURL
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyCnsVLKorpz98tD-aycq2aodvafbMpCtjql-mGcFmi1HOA36cC8S3RAkZEqthbVbxk/exec';
 
+        // 状態管理変数
         let currentUser = null;
 
-        window.onload = function() {
-            const cached = localStorage.getItem('loggia_user');
-            if (cached) {
-                currentUser = JSON.parse(cached);
-                updateUserUI();
-                loadTimeline();
-            } else {
-                document.getElementById('auth-gate').classList.remove('hidden');
-            }
+        // 🔄 共通エラーハンドラー（開発者向けの親切設計）
+        function handleSystemError(code, message, detail = '') {
+            console.error(`[${code}] ${message}`, detail);
+            document.getElementById('timeline-loading').classList.add('hidden');
+            alert(
+                `【エラーが発生したっぴ 🚨】\n\n` +
+                `■ エラーコード: ${code}\n` +
+                `■ 現象: ${message}\n` +
+                `■ 詳細: ${detail || 'なし'}\n\n` +
+                `👉 GASのURLが正しいか、デプロイが最新か確認してみてね！`
+            );
+        }
 
-            document.getElementById('post-message').oninput = function() {
-                document.getElementById('char-count').innerText = this.value.length + " / 140";
-            };
+        // 画面起動時の処理
+        window.onload = function() {
+            try {
+                const cached = localStorage.getItem('loggia_user');
+                if (cached) {
+                    currentUser = JSON.parse(cached);
+                    updateUserUI();
+                    loadTimeline();
+                } else {
+                    document.getElementById('auth-gate').classList.remove('hidden');
+                }
+
+                document.getElementById('post-message').oninput = function() {
+                    document.getElementById('char-count').innerText = this.value.length + " / 140";
+                };
+            } catch (e) {
+                handleSystemError('ERR-INIT', 'アプリの初期化中にクラッシュしました', e.message);
+            }
         };
 
+        // タブ切り替え（ログイン ⇆ 新規登録）
         function toggleAuthTab(tab) {
             if (tab === 'login') {
                 document.getElementById('form-login').classList.remove('hidden');
@@ -151,60 +171,69 @@
             }
         }
 
+        // 新規入居申し込み処理
         function handleRegister() {
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value.trim();
-            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
-            const birthdate = document.getElementById('reg-birth').value;
-            const username = document.getElementById('reg-username').value.trim().replace('@','');
-            let display_name = document.getElementById('reg-display').value.trim();
-            const icon_url = document.getElementById('reg-icon').value.trim();
+            try {
+                const email = document.getElementById('reg-email').value.trim();
+                const password = document.getElementById('reg-password').value.trim();
+                const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
+                const birthdate = document.getElementById('reg-birth').value;
+                const username = document.getElementById('reg-username').value.trim().replace('@','');
+                let display_name = document.getElementById('reg-display').value.trim();
+                const icon_url = document.getElementById('reg-icon').value.trim();
 
-            if (!email || !password || !passwordConfirm || !birthdate || !username) {
-                alert('必須項目が埋まっていないよ！');
-                return;
-            }
-
-            // 🔍 改善：入力された2つのパスワードが一致しているかチェック
-            if (password !== passwordConfirm) {
-                alert('入力されたパスワードと確認用パスワードが一致していないよ！もう一度確認してみてね。');
-                return;
-            }
-
-            // 空欄時のデフォルト値を「新参者」に設定
-            if (!display_name) {
-                display_name = '新参者';
-            }
-
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'register', email, password, birthdate, username, icon_url, display_name }) })
-            .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    alert('入居申し込みが完了したよ！');
-                    loginSuccess(res.user);
-                } else {
-                    alert('あれ、登録に問題が発生したようです...(管理者案件)：' + res.error);
+                if (!email || !password || !passwordConfirm || !birthdate || !username) {
+                    alert('必須項目が埋まっていないよ！');
+                    return;
                 }
-            });
+
+                if (password !== passwordConfirm) {
+                    alert('入力されたパスワードと確認用パスワードが一致していないよ！もう一度確認してみてね。');
+                    return;
+                }
+
+                if (!display_name) display_name = '新参者';
+
+                fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'register', email, password, birthdate, username, icon_url, display_name }) })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        alert('入居申し込みが完了したよ！');
+                        loginSuccess(res.user);
+                    } else {
+                        handleSystemError('ERR-REG-API', 'GAS側で登録を拒否されました', res.error);
+                    }
+                })
+                .catch(err => handleSystemError('ERR-REG-NET', 'GASへの通信に失敗しました(URL間違い等)', err.message));
+            } catch (e) {
+                handleSystemError('ERR-REG-CRASH', '登録処理中にJavaScriptエラーが起きました', e.message);
+            }
         }
 
+        // ログイン処理
         function handleLogin() {
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value.trim();
+            try {
+                const email = document.getElementById('login-email').value.trim();
+                const password = document.getElementById('login-password').value.trim();
 
-            if (!email || !password) return;
+                if (!email || !password) return;
 
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) })
-            .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    loginSuccess(res.user);
-                } else {
-                    alert('エラーだ！！(管理者案件)：' + res.error);
-                }
-            });
+                fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        loginSuccess(res.user);
+                    } else {
+                        handleSystemError('ERR-AUTH-API', 'ログインに失敗しました', res.error);
+                    }
+                })
+                .catch(err => handleSystemError('ERR-AUTH-NET', 'ログイン通信に失敗しました(URL間違い等)', err.message));
+            } catch (e) {
+                handleSystemError('ERR-AUTH-CRASH', 'ログイン処理中にエラーが起きました', e.message);
+            }
         }
 
+        // ログイン成功時のデータ反映
         function loginSuccess(user) {
             currentUser = user;
             localStorage.setItem('loggia_user', JSON.stringify(user));
@@ -218,4 +247,149 @@
             loadTimeline();
         }
 
-        function handleLogout
+        // 🚪 退出（ログアウト）処理
+        function handleLogout() {
+            localStorage.removeItem('loggia_user');
+            location.reload();
+        }
+
+        // UI（アイコンや名前）の更新
+        function updateUserUI() {
+            if (!currentUser) return;
+            const avatar = currentUser.icon_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+            document.getElementById('nav-avatar').src = avatar;
+            document.getElementById('form-avatar').src = avatar;
+            document.getElementById('nav-display-name').innerText = currentUser.display_name;
+            document.getElementById('nav-username').innerText = '@' + currentUser.username;
+        }
+
+        // 画面のタブ切り替え
+        function switchTab(tabName) {
+            if (tabName === 'timeline') {
+                document.getElementById('tab-timeline').classList.remove('hidden');
+                document.getElementById('tab-profile-edit').classList.add('hidden');
+                loadTimeline();
+            } else {
+                document.getElementById('tab-timeline').classList.add('hidden');
+                document.getElementById('tab-profile-edit').classList.remove('hidden');
+            }
+        }
+
+        // タイムラインデータの取得
+        function loadTimeline() {
+            document.getElementById('timeline-loading').classList.remove('hidden');
+            
+            if (GAS_API_URL.includes('この質問が終わったあと')) {
+                handleSystemError('ERR-URL-EMPTY', 'GASのURLがまだ初期状態のままです。コードの【設定箇所 1】を確認してください。');
+                return;
+            }
+
+            fetch(`${GAS_API_URL}?action=getTimeline`)
+            .then(res => res.json())
+            .then(res => {
+                document.getElementById('timeline-loading').classList.add('hidden');
+                if (res.success) {
+                    renderTimeline(res.data);
+                } else {
+                    handleSystemError('ERR-TL-API', 'GASは動いていますが、データの取得に失敗しました', res.error);
+                }
+            })
+            .catch(err => {
+                handleSystemError('ERR-TL-NET', 'タイムラインの通信に失敗しました。GASのURLが正しいか、またはWEBアプリとして全員に公開されているか確認してください。', err.message);
+            });
+        }
+
+        // タイムラインの描画
+        function renderTimeline(posts) {
+            const container = document.getElementById('timeline-posts');
+            container.innerHTML = '';
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-gray-500">居間にはまだ誰もいないようです。</div>';
+                return;
+            }
+            posts.forEach(post => {
+                const avatar = post.icon_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+                const postHtml = `
+                    <div class="p-4 twitter-hover flex space-x-3 transition">
+                        <img src="${avatar}" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center space-x-2 text-sm">
+                                <span class="font-bold text-white truncate">${post.display_name}</span>
+                                <span class="text-gray-400 truncate">@${post.username}</span>
+                                <span class="text-gray-500">·</span>
+                                <span class="text-gray-500 text-xs">${post.timestamp}</span>
+                            </div>
+                            <div class="text-white mt-1 break-words whitespace-pre-wrap">${post.message}</div>
+                            <div class="flex space-x-12 mt-3 text-gray-400 text-sm">
+                                <button onclick="likePost('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer">
+                                    <i class="far fa-heart mr-2"></i><span>${post.likes}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', postHtml);
+            });
+        }
+
+        // 投稿の送信
+        function submitPost() {
+            const textarea = document.getElementById('post-message');
+            const message = textarea.value.trim();
+            if (!message) return;
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    textarea.value = '';
+                    loadTimeline();
+                } else {
+                    handleSystemError('ERR-POST-API', '投稿の保存に失敗しました', res.error);
+                }
+            })
+            .catch(err => handleSystemError('ERR-POST-NET', '投稿の通信に失敗しました', err.message));
+        }
+
+        // いいね処理
+        function likePost(postId, buttonEl) {
+            const heartIcon = buttonEl.querySelector('i');
+            const countSpan = buttonEl.querySelector('span');
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'likePost', postId }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    countSpan.innerText = res.newLikes;
+                    heartIcon.className = 'fas fa-heart text-pink-500';
+                } else {
+                    handleSystemError('ERR-LIKE-API', 'いいねの反映に失敗しました', res.error);
+                }
+            })
+            .catch(err => handleSystemError('ERR-LIKE-NET', 'いいねの通信に失敗しました', err.message));
+        }
+
+        // プロフィール保存
+        function saveProfile() {
+            const displayName = document.getElementById('edit-display-name').value.trim();
+            const iconUrl = document.getElementById('edit-icon-url').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', username: currentUser.username, display_name: displayName, icon_url: iconUrl, bio: bio }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    currentUser.display_name = displayName || '新参者';
+                    currentUser.icon_url = iconUrl;
+                    currentUser.bio = bio;
+                    localStorage.setItem('loggia_user', JSON.stringify(currentUser));
+                    updateUserUI();
+                    alert('模様替え完了！');
+                    switchTab('timeline');
+                } else {
+                    handleSystemError('ERR-PROF-API', 'プロフィールの保存に失敗しました', res.error);
+                }
+            })
+            .catch(err => handleSystemError('ERR-PROF-NET', 'プロフィール保存の通信に失敗しました', err.message));
+        }
+    </script>
+</body>
+</html>
