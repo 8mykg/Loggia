@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loggia - インターネットの居間と今</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #15202b; color: #fff; }
+        .twitter-border { border-color: #38444d; }
+        .twitter-blue { background-color: #1d9bf0; }
+        .twitter-blue-text { color: #1d9bf0; }
+        .twitter-hover:hover { background-color: #192734; }
+    </style>
+</head>
+<body class="font-sans">
+
+    <div class="max-w-6xl mx-auto flex min-h-screen">
+        
+        <header class="w-1/4 border-r twitter-border p-4 flex flex-col justify-between hidden md:flex">
+            <div class="space-y-4 text-xl font-bold">
+                <div class="text-3xl p-2 twitter-blue-text font-serif italic tracking-wider">Loggia</div>
+                <button onclick="switchTab('timeline')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer"><i class="fas fa-couch mr-4"></i>居間 (ホーム)</button>
+                <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer"><i class="fas fa-door-open mr-4"></i>模様替え (設定)</button>
+            </div>
+            <div class="flex items-center space-x-3 p-2 border twitter-border rounded-full">
+                <img id="nav-avatar" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png" class="w-10 h-10 rounded-full object-cover">
+                <div class="overflow-hidden">
+                    <div id="nav-display-name" class="font-bold truncate">ゲスト</div>
+                    <div id="nav-username" class="text-gray-400 text-sm truncate">@guest</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 border-r twitter-border min-h-screen">
+            
+            <section id="tab-timeline" class="block">
+                <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center">
+                    <span>Loggia の「今」</span>
+                    <span class="text-xs font-normal text-gray-400">インターネットの居間と今</span>
+                </div>
+                
+                <div class="border-b twitter-border p-4 flex space-x-3">
+                    <img id="form-avatar" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png" class="w-12 h-12 rounded-full object-cover">
+                    <div class="flex-1">
+                        <textarea id="post-message" placeholder="いまどうしてる？" class="w-full bg-transparent text-xl outline-none resize-none h-24" maxlength="140"></textarea>
+                        <div class="flex justify-between items-center pt-2 border-t twitter-border mt-2">
+                            <span class="text-sm text-gray-500" id="char-count">0 / 140</span>
+                            <button onclick="submitPost()" class="twitter-blue text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90">呟く</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="timeline-loading" class="p-8 text-center text-gray-400"><i class="fas fa-spinner animate-spin mr-2"></i>居間をのぞき中...</div>
+                <div id="timeline-posts" class="divide-y twitter-border"></div>
+            </section>
+
+            <section id="tab-profile-edit" class="hidden p-4">
+                <div class="font-bold text-xl mb-6 border-b twitter-border pb-2">自室の模様替え（プロフィール設定）</div>
+                <div class="space-y-4 max-w-md">
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">住人ID（英数字・変更すると別垢扱いになるから注意な！！）</label>
+                        <input type="text" id="edit-username" value="guest" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none focus:border-[#1d9bf0]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">表札の名前（表示名）</label>
+                        <input type="text" id="edit-display-name" value="ゲスト" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none focus:border-[#1d9bf0]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">アイコン画像URL</label>
+                        <input type="text" id="edit-icon-url" placeholder="https://example.com/avatar.png" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none focus:border-[#1d9bf0]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">自己紹介・部屋の説明</label>
+                        <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none focus:border-[#1d9bf0] h-24 resize-none"></textarea>
+                    </div>
+                    <button onclick="saveProfile()" class="twitter-blue text-white font-bold px-6 py-2 rounded-full cursor-pointer hover:opacity-90">模様替えを保存</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="fixed bottom-0 left-0 right-0 bg-[#15202b] border-t twitter-border flex justify-around p-3 md:hidden">
+            <button onclick="switchTab('timeline')" class="text-2xl text-gray-400 focus:text-white"><i class="fas fa-couch"></i></button>
+            <button onclick="switchTab('profile-edit')" class="text-2xl text-gray-400 focus:text-white"><i class="fas fa-door-open"></i></button>
+        </footer>
+    </div>
+
+    <script>
+        // 🚨【超重要】ここにGoogle Keepに保存したGASの「ウェブアプリURL」を貼り付けてください！
+        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyCnsVLKorpz98tD-aycq2aodvafbMpCtjql-mGcFmi1HOA36cC8S3RAkZEqthbVbxk/exec';
+
+        let currentUser = {
+            username: localStorage.getItem('sns_username') || 'guest',
+            display_name: localStorage.getItem('sns_display_name') || 'ゲスト',
+            icon_url: localStorage.getItem('sns_icon_url') || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
+            bio: localStorage.getItem('sns_bio') || ''
+        };
+
+        window.onload = function() {
+            updateUserUI();
+            loadTimeline();
+            
+            document.getElementById('edit-username').value = currentUser.username;
+            document.getElementById('edit-display-name').value = currentUser.display_name;
+            document.getElementById('edit-icon-url').value = currentUser.icon_url === 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png' ? '' : currentUser.icon_url;
+            document.getElementById('edit-bio').value = currentUser.bio;
+
+            document.getElementById('post-message').oninput = function() {
+                document.getElementById('char-count').innerText = this.value.length + " / 140";
+            };
+        };
+
+        function updateUserUI() {
+            const avatar = currentUser.icon_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+            document.getElementById('nav-avatar').src = avatar;
+            document.getElementById('form-avatar').src = avatar;
+            document.getElementById('nav-display-name').innerText = currentUser.display_name;
+            document.getElementById('nav-username').innerText = '@' + currentUser.username;
+        }
+
+        function switchTab(tabName) {
+            if (tabName === 'timeline') {
+                document.getElementById('tab-timeline').classList.remove('hidden');
+                document.getElementById('tab-profile-edit').classList.add('hidden');
+                loadTimeline();
+            } else {
+                document.getElementById('tab-timeline').classList.add('hidden');
+                document.getElementById('tab-profile-edit').classList.remove('hidden');
+            }
+        }
+
+        function loadTimeline() {
+            document.getElementById('timeline-loading').classList.remove('hidden');
+            
+            fetch(`${GAS_API_URL}?action=getTimeline`)
+                .then(res => res.json())
+                .then(res => {
+                    document.getElementById('timeline-loading').classList.add('hidden');
+                    if (!res.success) {
+                        alert('データの取得に失敗したっぴ：' + res.error);
+                        return;
+                    }
+                    renderTimeline(res.data);
+                })
+                .catch(err => {
+                    document.getElementById('timeline-loading').classList.add('hidden');
+                    console.error(err);
+                });
+        }
+
+        function renderTimeline(posts) {
+            const container = document.getElementById('timeline-posts');
+            container.innerHTML = '';
+
+            if (posts.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-gray-500">居間にはまだ誰もいないようです。最初の声をかけてみましょう！</div>';
+                return;
+            }
+
+            posts.forEach(post => {
+                const avatar = post.icon_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+                const replyLabel = post.reply_to ? `<div class="text-xs text-gray-500 mb-1"><i class="fas fa-reply mr-1"></i>話しかけ先: @${post.reply_to}</div>` : '';
+                
+                const postHtml = `
+                    <div class="p-4 twitter-hover flex space-x-3 transition">
+                        <img src="${avatar}" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center space-x-2 text-sm">
+                                <span class="font-bold text-white truncate">${post.display_name}</span>
+                                <span class="text-gray-400 truncate">@${post.username}</span>
+                                <span class="text-gray-500">·</span>
+                                <span class="text-gray-500 text-xs whitespace-nowrap">${post.timestamp}</span>
+                            </div>
+                            ${replyLabel}
+                            <div class="text-white mt-1 break-words whitespace-pre-wrap">${post.message}</div>
+                            
+                            <div class="flex space-x-12 mt-3 text-gray-400 text-sm">
+                                <button onclick="openReply('${post.username}', '${post.id}')" class="hover:text-[#1d9bf0] transition cursor-pointer">
+                                    <i class="far fa-comment mr-2"></i>話しかける
+                                </button>
+                                <button onclick="likePost('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer">
+                                    <i class="far fa-heart mr-2"></i><span>${post.likes}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', postHtml);
+            });
+        }
+
+        function submitPost(replyToUsername = '') {
+            const textarea = document.getElementById('post-message');
+            const message = textarea.value.trim();
+            if (!message) return;
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerText = "今はね...送信中";
+
+            const payload = {
+                action: 'createPost',
+                username: currentUser.username,
+                message: message,
+                reply_to: replyToUsername
+            };
+
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(res => {
+                btn.disabled = false;
+                btn.innerText = "呟く";
+                if (res.success) {
+                    textarea.value = '';
+                    document.getElementById('char-count').innerText = "0 / 140";
+                    textarea.placeholder = "いまどうしてんの";
+                    loadTimeline();
+                } else {
+                    alert('なんか投稿に失敗してしまったらしい！！もっかい！！：' + res.error);
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerText = "呟く";
+                console.error(err);
+            });
+        }
+
+        function openReply(username, postId) {
+            const textarea = document.getElementById('post-message');
+            textarea.placeholder = `@${username} さんに話しかけてる...`;
+            textarea.focus();
+            const sendBtn = document.querySelector('#tab-timeline button[onclick^="submitPost"]');
+            sendBtn.setAttribute('onclick', `submitPost('${username}')`);
+        }
+
+        function likePost(postId, buttonEl) {
+            const heartIcon = buttonEl.querySelector('i');
+            const countSpan = buttonEl.querySelector('span');
+            buttonEl.disabled = true;
+
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'likePost', postId: postId })
+            })
+            .then(res => res.json())
+            .then(res => {
+                buttonEl.disabled = false;
+                if (res.success) {
+                    countSpan.innerText = res.newLikes;
+                    heartIcon.classList.remove('far');
+                    heartIcon.classList.add('fas', 'text-pink-500');
+                    buttonEl.classList.add('text-pink-500');
+                }
+            })
+            .catch(err => {
+                buttonEl.disabled = false;
+                console.error(err);
+            });
+        }
+
+        function saveProfile() {
+            const username = document.getElementById('edit-username').value.trim().replace('@', '');
+            const displayName = document.getElementById('edit-display-name').value.trim();
+            const iconUrl = document.getElementById('edit-icon-url').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+
+            if (!username || !displayName) {
+                alert('あれ...なんかおかしいな...あっ！住人IDと表札の名前は必須だよ！');
+                return;
+            }
+
+            const payload = {
+                action: 'updateProfile',
+                username: username,
+                display_name: displayName,
+                icon_url: iconUrl,
+                bio: bio
+            };
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerText = "今保存しようとしてる...";
+
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(res => {
+                btn.disabled = false;
+                btn.innerText = "模様替えを保存";
+                if (res.success) {
+                    localStorage.setItem('sns_username', username);
+                    localStorage.setItem('sns_display_name', displayName);
+                    localStorage.setItem('sns_icon_url', iconUrl);
+                    localStorage.setItem('sns_bio', bio);
+
+                    currentUser = { username, display_name, icon_url: iconUrl, bio };
+                    updateUserUI();
+                    alert('模様替えが完了したので居間に戻るッピ！。');
+                    switchTab('timeline');
+                } else {
+                    alert('なんとプロフィールの保存に失敗してしまった！！：' + res.error);
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerText = "模様替えを保存";
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>
