@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loggia - インターネットの居間と今</title>
+    
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
+    
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #15202b; color: #fff; }
         .twitter-border { border-color: #38444d; }
-        .twitter-blue { background-color: #1d9bf0; }
-        .twitter-blue-text { color: #1d9bf0; }
+        /* 🎨 メメインカラーコードを #5999FF に統一 */
+        .brand-color-bg { background-color: #5999FF; }
+        .brand-color-text { color: #5999FF; }
         .twitter-hover:hover { background-color: #192734; }
         
         .custom-scroll::-webkit-scrollbar { width: 6px; }
@@ -24,19 +28,19 @@
         <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl">
             <div class="flex flex-col items-center space-y-3">
                 <img src="logo.jpg" alt="Loggia Logo" class="w-16 h-16 object-cover rounded-xl shadow-md bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=Loggia'">
-                <div class="text-xl text-gray-300 font-serif italic tracking-widest">Loggia</div>
+                <div class="text-2xl font-light tracking-widest font-sans text-gray-200">Loggia</div>
             </div>
             <p class="text-center text-gray-400 text-sm">インターネットの「いま」が集まる居間へようこそ。</p>
             
             <div class="flex border-b twitter-border text-center">
-                <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 border-transparent twitter-blue-text !border-[#1d9bf0]">ログイン</button>
+                <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 border-transparent brand-color-text !border-[#5999FF]">ログイン</button>
                 <button onclick="toggleAuthTab('register')" id="btn-tab-register" class="w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent">入居申し込み</button>
             </div>
 
             <div id="form-login" class="space-y-4">
-                <input type="email" id="login-email" placeholder="メールアドレス" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#1d9bf0]">
-                <input type="password" id="login-password" placeholder="パスワード" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#1d9bf0]">
-                <button onclick="handleLogin()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">居間に入る</button>
+                <input type="email" id="login-email" placeholder="メールアドレス" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#5999FF]">
+                <input type="password" id="login-password" placeholder="パスワード" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#5999FF]">
+                <button onclick="handleLogin()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">居間に入る</button>
             </div>
 
             <div id="form-register" class="space-y-4 hidden h-[400px] overflow-y-auto pr-1 custom-scroll">
@@ -53,23 +57,23 @@
                 <div class="bg-[#15202b] p-3 rounded border twitter-border space-y-3">
                     <label class="text-xs text-gray-400 block">アイコン画像（未選択の場合はデフォルトになります）</label>
                     <div class="flex items-center space-x-4">
-                        <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
+                        <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
                         <img id="reg-preview" src="logo.jpg" class="w-12 h-12 rounded-full object-cover border twitter-border hidden">
                     </div>
                 </div>
                 
-                <button onclick="handleRegister()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">アカウントを作成して入居</button>
+                <button onclick="handleRegister()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">アカウントを作成して入居</button>
             </div>
         </div>
     </div>
 
-    <div class="w-full flex min-h-screen justify-start">
+    <div class="w-full flex min-h-screen justify-end pr-4 md:pr-12 lg:pr-32">
         
         <header class="w-1/5 max-w-[240px] border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0">
             <div class="space-y-6 text-xl font-bold">
                 <div class="flex items-center space-x-3 p-2">
                     <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover rounded-lg shadow bg-[#000000]" onerror="this.src='https://placehold.co/50x50/000000/ffffff?text=L'">
-                    <div class="text-xl text-gray-300 font-serif italic tracking-widest">Loggia</div>
+                    <div class="text-lg font-light tracking-widest font-sans text-gray-300">Loggia</div>
                 </div>
                 
                 <nav class="space-y-2 text-[16px]">
@@ -88,7 +92,7 @@
             </div>
         </header>
 
-        <main class="flex-1 max-w-2xl border-l border-r twitter-border min-h-screen pb-20 md:pb-0 md:ml-24 lg:ml-40">
+        <main class="flex-1 max-w-3xl border-l border-r twitter-border min-h-screen pb-20 md:pb-0">
             
             <section id="tab-timeline" class="block">
                 <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
@@ -102,7 +106,7 @@
                         <textarea id="post-message" placeholder="いまどうしてる？" class="w-full bg-transparent text-xl outline-none resize-none h-24 pt-1" maxlength="140"></textarea>
                         <div class="flex justify-between items-center pt-2 border-t twitter-border mt-2">
                             <span class="text-sm text-gray-500" id="char-count">0 / 140</span>
-                            <button onclick="submitPost()" class="twitter-blue text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90">届け！</button>
+                            <button onclick="submitPost()" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90">届け！</button>
                         </div>
                     </div>
                 </div>
@@ -115,22 +119,22 @@
                 <div class="space-y-5 max-w-md">
                     <div>
                         <label class="block text-gray-400 text-sm mb-1">表札の名前（表示名）</label>
-                        <input type="text" id="edit-display-name" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none focus:border-[#1d9bf0]">
+                        <input type="text" id="edit-display-name" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none focus:border-[#5999FF]">
                     </div>
                     
                     <div class="bg-[#192734]/40 p-4 rounded-xl border twitter-border space-y-3">
                         <label class="block text-gray-400 text-sm">新しいアイコン画像（添付）</label>
                         <div class="flex items-center space-x-4">
-                            <input type="file" id="edit-icon-file" accept="image/*" onchange="previewImage(this, 'edit-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
+                            <input type="file" id="edit-icon-file" accept="image/*" onchange="previewImage(this, 'edit-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
                             <img id="edit-preview" src="" class="w-14 h-14 rounded-full object-cover border twitter-border hidden">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-gray-400 text-sm mb-1">自己紹介・部屋の説明</label>
-                        <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none h-24 resize-none focus:border-[#1d9bf0]"></textarea>
+                        <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none h-24 resize-none focus:border-[#5999FF]"></textarea>
                     </div>
-                    <button onclick="saveProfile()" class="twitter-blue text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">模様替えを保存</button>
+                    <button onclick="saveProfile()" class="brand-color-bg text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">模様替えを保存</button>
                 </div>
             </section>
         </main>
@@ -146,7 +150,6 @@
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyCnsVLKorpz98tD-aycq2aodvafbMpCtjql-mGcFmi1HOA36cC8S3RAkZEqthbVbxk/exec';
 
         let currentUser = null;
-        let likedPosts = new Set();
 
         window.onload = function() {
             const cached = localStorage.getItem('loggia_user');
@@ -205,12 +208,12 @@
             if (tab === 'login') {
                 document.getElementById('form-login').classList.remove('hidden');
                 document.getElementById('form-register').classList.add('hidden');
-                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold border-b-2 twitter-blue-text !border-[#1d9bf0]";
+                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold border-b-2 brand-color-text !border-[#5999FF]";
                 document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
             } else {
                 document.getElementById('form-login').classList.add('hidden');
                 document.getElementById('form-register').classList.remove('hidden');
-                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold twitter-blue-text !border-[#1d9bf0]";
+                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold brand-color-text !border-[#5999FF]";
                 document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
             }
         }
@@ -317,8 +320,10 @@
         }
 
         function loadTimeline() {
+            if (!currentUser) return;
             document.getElementById('timeline-loading').classList.remove('hidden');
-            fetch(`${GAS_API_URL}?action=getTimeline`)
+            // 🛠️ 自分がどれをいいねしているか取得するためにusernameをパラメータに付与
+            fetch(`${GAS_API_URL}?action=getTimeline&username=${currentUser.username}`)
             .then(res => res.json())
             .then(res => {
                 document.getElementById('timeline-loading').classList.add('hidden');
@@ -335,7 +340,9 @@
             }
             posts.forEach(post => {
                 const avatarHtml = getAvatarHtml(post.icon_url, "w-12 h-12 rounded-full object-cover flex-shrink-0");
-                const hasLiked = likedPosts.has(post.id);
+                
+                // 🛠️ GASから帰ってきた「自分がいいねしているか」のフラグをそのまま判定に使用
+                const hasLiked = post.isLiked === true;
                 const formattedMessage = linkify(post.message || '');
 
                 const postHtml = `
@@ -351,7 +358,7 @@
                             <div class="text-white mt-1 break-words whitespace-pre-wrap text-[15px]">${formattedMessage}</div>
                             
                             <div class="flex justify-between max-w-md mt-3 text-gray-500 text-sm">
-                                <button onclick="alert('次回、返信のバックエンド機能を統合します。')" class="hover:text-[#1d9bf0] transition cursor-pointer">
+                                <button onclick="alert('次回、返信のバックエンド機能を統合します。')" class="hover:text-[#5999FF] transition cursor-pointer">
                                     <i class="far fa-comment mr-2"></i><span>0</span>
                                 </button>
                                 <button onclick="alert('次回、リポストのバックエンド機能を統合します。')" class="hover:text-green-500 transition cursor-pointer">
@@ -360,7 +367,7 @@
                                 <button onclick="alert('次回、引用ポストのバックエンド機能を統合します。')" class="hover:text-amber-500 transition cursor-pointer">
                                     <i class="far fa-sticky-note mr-2"></i><span>0</span>
                                 </button>
-                                <button onclick="toggleLike('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}">
+                                <button onclick="toggleLike('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}" data-liked="${hasLiked}">
                                     <i class="${hasLiked ? 'fas' : 'far'} fa-heart mr-2"></i><span>${post.likes || 0}</span>
                                 </button>
                             </div>
@@ -389,33 +396,41 @@
             });
         }
 
+        // ❤️ データベース連動型・完全トグルいいねシステム
         function toggleLike(postId, buttonEl) {
             const heartIcon = buttonEl.querySelector('i');
             const countSpan = buttonEl.querySelector('span');
-            let currentCount = parseInt(countSpan.innerText) || 0;
             
-            const isDislike = likedPosts.has(postId);
-            const targetAction = isDislike ? 'dislikePost' : 'likePost';
+            // 現在の状態を属性から確実に取得
+            const isCurrentlyLiked = buttonEl.getAttribute('data-liked') === 'true';
+            const targetAction = isCurrentlyLiked ? 'dislikePost' : 'likePost';
+
+            // ボタンを一瞬無効化して連打バグを防止
+            buttonEl.style.pointerEvents = 'none';
 
             fetch(GAS_API_URL, { 
                 method: 'POST', 
-                body: JSON.stringify({ action: targetAction, postId: postId }) 
+                body: JSON.stringify({ action: targetAction, postId: postId, username: currentUser.username }) 
             })
             .then(res => res.json())
             .then(res => {
+                buttonEl.style.pointerEvents = 'auto';
                 if (res.success) {
-                    if (isDislike) {
-                        likedPosts.delete(postId);
-                        heartIcon.className = 'far fa-heart mr-2';
-                        buttonEl.classList.remove('text-pink-500');
-                        countSpan.innerText = res.newLikes !== undefined ? res.newLikes : currentCount - 1;
-                    } else {
-                        likedPosts.add(postId);
+                    const nextState = !isCurrentlyLiked;
+                    buttonEl.setAttribute('data-liked', String(nextState));
+                    countSpan.innerText = res.newLikes;
+
+                    if (nextState) {
                         heartIcon.className = 'fas fa-heart text-pink-500 mr-2';
                         buttonEl.classList.add('text-pink-500');
-                        countSpan.innerText = res.newLikes !== undefined ? res.newLikes : currentCount + 1;
+                    } else {
+                        heartIcon.className = 'far fa-heart mr-2';
+                        buttonEl.classList.remove('text-pink-500');
                     }
                 }
+            })
+            .catch(() => {
+                buttonEl.style.pointerEvents = 'auto';
             });
         }
 
