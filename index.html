@@ -13,21 +13,35 @@
         .brand-color-bg { background-color: #5999FF; }
         .brand-color-text { color: #5999FF; }
         .twitter-hover:hover { background-color: #192734; }
-        
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #192734; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #38444d; border-radius: 3px; }
     </style>
 </head>
-<body class="font-sans">
+<body class="font-sans antialiased">
 
-    <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
-        <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl">
+    <div id="modal-container" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-[#192734] border twitter-border p-6 rounded-2xl w-full max-w-lg shadow-2xl relative mx-4">
+            <button onclick="closeCustomModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg"><i class="fas fa-times"></i></button>
+            <div id="modal-content-area"></div>
+        </div>
+    </div>
+
+    <div id="block-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
+        <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md text-center space-y-6 shadow-2xl mx-4">
+            <div id="block-icon-area" class="text-5xl"></div>
+            <h2 id="block-title" class="text-2xl font-bold"></h2>
+            <p id="block-desc" class="text-gray-400 text-sm"></p>
+            <div id="block-action-area" class="pt-4"></div>
+        </div>
+    </div>
+
+    <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-40 flex items-center justify-center hidden">
+        <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl mx-4">
             <div class="flex flex-col items-center space-y-3">
-                <img src="logo.jpg" alt="Loggia Logo" class="w-20 h-20 object-cover shadow-md bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=Loggia'">
+                <img src="logo.jpg" alt="Loggia Logo" class="w-16 h-16 object-cover shadow bg-[#000000]">
                 <div class="text-2xl font-light tracking-widest text-gray-200">Loggia</div>
             </div>
-            <p class="text-center text-gray-400 text-sm">インターネットの「いま」が集まる居間へ。</p>
             
             <div class="flex border-b twitter-border text-center">
                 <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 brand-color-text !border-[#5999FF]">ログイン</button>
@@ -40,7 +54,7 @@
                 <button onclick="handleLogin()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">居間に入る</button>
             </div>
 
-            <div id="form-register" class="space-y-4 hidden h-[400px] overflow-y-auto pr-1 custom-scroll">
+            <div id="form-register" class="space-y-4 hidden h-[320px] overflow-y-auto pr-1 custom-scroll">
                 <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 <input type="password" id="reg-password-confirm" placeholder="パスワードの確認 (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
@@ -49,31 +63,30 @@
                     <input type="date" id="reg-birth" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none text-gray-400">
                 </div>
                 <input type="text" id="reg-username" placeholder="住人ID (英数字・必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                <input type="text" id="reg-display" placeholder="表札の名前 (空欄の場合は新参者)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
+                <input type="text" id="reg-display" placeholder="表札の名前" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
                 
                 <div class="bg-[#15202b] p-3 rounded border twitter-border space-y-3">
                     <label class="text-xs text-gray-400 block">アイコン画像（任意）</label>
-                    <div class="flex items-center space-x-4">
-                        <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
-                        <img id="reg-preview" src="logo.jpg" class="w-12 h-12 rounded-full object-cover border twitter-border hidden">
-                    </div>
+                    <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400">
+                    <img id="reg-preview" src="logo.jpg" class="w-12 h-12 rounded-full object-cover hidden">
                 </div>
-                <button onclick="handleRegister()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">アカウントを作成して入居</button>
+                <button onclick="handleRegister()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">入居する</button>
             </div>
         </div>
     </div>
 
-    <div class="w-full flex min-h-screen justify-center">
+    <div class="w-full flex min-h-screen">
         
-        <header class="w-64 border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0 z-30">
+        <header class="w-64 border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0 z-30 bg-[#15202b]">
             <div class="space-y-6 text-xl font-bold">
-                <div class="flex items-center space-x-3 p-2">
-                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover shadow bg-[#000000]" onerror="this.src='https://placehold.co/50x50/000000/ffffff?text=L'">
+                <div onclick="switchTab('timeline')" class="flex items-center space-x-3 p-2 cursor-pointer">
+                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover shadow bg-[#000000]">
                     <div class="text-lg font-light tracking-widest text-gray-300">Loggia</div>
                 </div>
                 <nav class="space-y-2 text-[16px]">
                     <button onclick="switchTab('timeline')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-couch w-8 text-center mr-2 text-gray-400"></i>居間</button>
-                    <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-door-open w-8 text-center mr-2 text-gray-400"></i>模様替え</button>
+                    <button onclick="openMyRoomProfile()" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-user w-8 text-center mr-2 text-gray-400"></i>自分の部屋</button>
+                    <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-door-open w-8 text-center mr-2 text-gray-400"></i>模様替え・設定</button>
                     <button onclick="handleLogout()" class="w-full text-left p-3 rounded-full text-red-400/80 twitter-hover cursor-pointer flex items-center"><i class="fas fa-sign-out-alt w-8 text-center mr-2"></i>退出</button>
                 </nav>
             </div>
@@ -87,19 +100,34 @@
             </div>
         </header>
 
-        <main class="flex-1 max-w-3xl border-r border-l twitter-border min-h-screen pb-20 md:pb-0 mx-0 md:mx-4">
+        <main class="flex-1 max-w-3xl border-r twitter-border min-h-screen pb-20 md:pb-0 bg-[#15202b]">
             
             <section id="tab-timeline" class="block">
+                
                 <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
                     <div class="flex items-center space-x-3">
-                        <span>Loggia の「今」</span>
+                        <button id="profile-back-btn" onclick="exitProfileMode()" class="mr-2 text-gray-400 hover:text-white hidden"><i class="fas fa-arrow-left"></i></button>
+                        <span id="timeline-header-title">Loggia の「今」</span>
                         <span id="sync-status" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20 animate-pulse">
                           <span id="sync-dot" class="w-1.5 h-1.5 mr-1.5 bg-green-400 rounded-full"></span><span id="sync-text">自動同期中</span>
                         </span>
                     </div>
                 </div>
+
+                <div id="profile-card-area" class="border-b twitter-border bg-[#192734]/20 hidden p-6 space-y-4">
+                    <div class="flex items-start justify-between">
+                        <div id="prof-card-avatar" class="w-20 h-20"></div>
+                        <span id="prof-card-badge" class="px-3 py-1 rounded-full text-xs font-bold"></span>
+                    </div>
+                    <div>
+                        <h2 id="prof-card-display" class="text-2xl font-bold text-white"></h2>
+                        <p id="prof-card-username" class="text-gray-400 text-sm"></p>
+                    </div>
+                    <p id="prof-card-bio" class="text-gray-200 text-base whitespace-pre-wrap"></p>
+                    <div class="text-gray-400 text-sm font-bold border-t twitter-border pt-3"><i class="fas fa-couch mr-2"></i>この部屋の主の今までのつぶやき</div>
+                </div>
                 
-                <div class="border-b twitter-border p-4 flex space-x-3 bg-[#192734]/10">
+                <div id="timeline-post-box" class="border-b twitter-border p-4 flex space-x-3 bg-[#192734]/10">
                     <div id="form-avatar-container" class="w-12 h-12 flex-shrink-0"></div>
                     <div class="flex-1">
                         <textarea id="post-message" placeholder="いまどうしてる？" class="w-full bg-transparent text-xl outline-none resize-none h-24 pt-1" maxlength="140"></textarea>
@@ -109,29 +137,45 @@
                         </div>
                     </div>
                 </div>
+                
                 <div id="timeline-loading" class="p-8 text-center text-gray-400"><i class="fas fa-spinner animate-spin mr-2"></i>居間をのぞき中...</div>
                 <div id="timeline-posts" class="divide-y twitter-border"></div>
             </section>
 
-            <section id="tab-profile-edit" class="hidden p-6">
-                <div class="font-bold text-xl mb-6 border-b twitter-border pb-2">自室の模様替え</div>
-                <div class="space-y-5 max-w-md">
-                    <div>
-                        <label class="block text-gray-400 text-sm mb-1">表札の名前</label>
-                        <input type="text" id="edit-display-name" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none focus:border-[#5999FF]">
-                    </div>
-                    <div class="bg-[#192734]/40 p-4 rounded-xl border twitter-border space-y-3">
-                        <label class="block text-gray-400 text-sm">新しいアイコン画像</label>
-                        <div class="flex items-center space-x-4">
-                            <input type="file" id="edit-icon-file" accept="image/*" onchange="previewImage(this, 'edit-preview')" class="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
-                            <img id="edit-preview" src="" class="w-14 h-14 rounded-full object-cover border twitter-border hidden">
+            <section id="tab-profile-edit" class="hidden p-6 space-y-8">
+                <div>
+                    <div class="font-bold text-xl mb-6 border-b twitter-border pb-2">自室の模様替え</div>
+                    <div class="space-y-5 max-w-md">
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-1">表札の名前</label>
+                            <input type="text" id="edit-display-name" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none focus:border-[#5999FF]">
                         </div>
+                        <div class="bg-[#192734]/40 p-4 rounded-xl border twitter-border space-y-3">
+                            <label class="block text-gray-400 text-sm">アイコン画像</label>
+                            <div class="flex items-center space-x-4">
+                                <input type="file" id="edit-icon-file" accept="image/*" onchange="previewImage(this, 'edit-preview')" class="block w-full text-xs text-gray-400">
+                                <img id="edit-preview" src="" class="w-14 h-14 rounded-full object-cover border twitter-border hidden">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-1">自己紹介</label>
+                            <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none h-24 resize-none focus:border-[#5999FF]"></textarea>
+                        </div>
+                        <button onclick="saveProfile()" class="brand-color-bg text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">保存する</button>
                     </div>
-                    <div>
-                        <label class="block text-gray-400 text-sm mb-1">自己紹介</label>
-                        <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none h-24 resize-none focus:border-[#5999FF]"></textarea>
+                </div>
+
+                <div class="pt-6 border-t border-red-900/40">
+                    <div class="font-bold text-xl text-red-400 mb-2">危機管理・アカウント設定</div>
+                    <p class="text-gray-400 text-xs mb-4">Loggiaからの一時離脱、または全データの抹消を自分自身の意志で行えます。</p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="openStopConfirmModal()" class="bg-amber-600/20 text-amber-400 border border-amber-500/30 font-bold px-4 py-2.5 rounded-xl hover:bg-amber-600/40 cursor-pointer text-sm">
+                            <i class="fas fa-moon mr-2"></i>アカウントを一時停止(Stop)
+                        </button>
+                        <button onclick="openDeleteConfirmModal()" class="bg-red-600/20 text-red-400 border border-red-500/30 font-bold px-4 py-2.5 rounded-xl hover:bg-red-600/40 cursor-pointer text-sm">
+                            <i class="fas fa-trash-alt mr-2"></i>全データを完全削除(Delete)
+                        </button>
                     </div>
-                    <button onclick="saveProfile()" class="brand-color-bg text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">模様替えを保存</button>
                 </div>
             </section>
         </main>
@@ -139,8 +183,8 @@
 
     <footer class="fixed bottom-0 left-0 right-0 bg-[#15202b]/95 backdrop-blur border-t border-[#38444d] flex justify-around p-3 md:hidden z-20 shadow-lg">
         <button onclick="switchTab('timeline')" class="text-2xl text-gray-400 focus:text-white px-4 py-1"><i class="fas fa-couch"></i></button>
+        <button onclick="openMyRoomProfile()" class="text-2xl text-gray-400 focus:text-white px-4 py-1"><i class="fas fa-user"></i></button>
         <button onclick="switchTab('profile-edit')" class="text-2xl text-gray-400 focus:text-white px-4 py-1"><i class="fas fa-door-open"></i></button>
-        <button onclick="handleLogout()" class="text-2xl text-red-400/80 px-4 py-1"><i class="fas fa-sign-out-alt"></i></button>
     </footer>
 
     <script>
@@ -148,13 +192,14 @@
 
         let currentUser = null;
         let autoRefreshInterval = null;
+        let selectedProfileUser = null; // 現在特定ユーザーのプロフを見ているかどうか
 
         window.onload = function() {
             const cached = localStorage.getItem('loggia_user');
             if (cached) {
                 currentUser = JSON.parse(cached);
                 updateUserUI();
-                loadTimeline(false); // 🛠️ 初回ロードは閲覧数を増やす
+                loadTimeline(false);
                 startAutoRefresh();
             } else {
                 document.getElementById('auth-gate').classList.remove('hidden');
@@ -168,7 +213,7 @@
             if (autoRefreshInterval) clearInterval(autoRefreshInterval);
             autoRefreshInterval = setInterval(() => {
                 if (!document.getElementById('tab-timeline').classList.contains('hidden')) {
-                    loadTimeline(true); // 🛠️ 自動同期は「isAutoRefresh=true」で閲覧数を増やさない！
+                    loadTimeline(true);
                 }
             }, 10000);
         }
@@ -177,7 +222,6 @@
             const statusEl = document.getElementById('sync-status');
             const dotEl = document.getElementById('sync-dot');
             const textEl = document.getElementById('sync-text');
-            
             if (isOnline) {
                 statusEl.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20 animate-pulse";
                 dotEl.className = "w-1.5 h-1.5 mr-1.5 bg-green-400 rounded-full";
@@ -189,207 +233,141 @@
             }
         }
 
+        // ポップアップ制御
+        function openCustomModal(htmlContent) {
+            const container = document.getElementById('modal-container');
+            document.getElementById('modal-content-area').innerHTML = htmlContent;
+            container.classList.remove('hidden');
+            setTimeout(() => container.classList.add('opacity-100'), 10);
+        }
+        function closeCustomModal() {
+            const container = document.getElementById('modal-container');
+            container.classList.remove('opacity-100');
+            setTimeout(() => { container.classList.add('hidden'); }, 200);
+        }
+
+        // タイムライン読み込み
         function loadTimeline(isAutoRefresh = false) {
             if (!currentUser) return;
             if (!isAutoRefresh) document.getElementById('timeline-loading').classList.remove('hidden');
             
-            // 🛠️ クエリパラメータに自動同期フラグを付与！
-            fetch(`${GAS_API_URL}?action=getTimeline&username=${currentUser.username}&isAutoRefresh=${isAutoRefresh}`)
+            let url = `${GAS_API_URL}?action=getTimeline&username=${currentUser.username}&isAutoRefresh=${isAutoRefresh}`;
+            if (selectedProfileUser) {
+                url += `&targetUser=${selectedProfileUser}`;
+            }
+
+            fetch(url)
             .then(res => res.json())
             .then(res => {
                 if (!isAutoRefresh) document.getElementById('timeline-loading').classList.add('hidden');
                 if (res.success) {
-                    setSyncStatus(true); // 🟢 オンライン
+                    setSyncStatus(true);
                     renderTimeline(res.data);
-                } else {
-                    setSyncStatus(false); // 🔴 エラー
-                }
+                } else { setSyncStatus(false); }
             })
             .catch(() => {
                 if (!isAutoRefresh) document.getElementById('timeline-loading').classList.add('hidden');
-                setSyncStatus(false); // 🔴 応答なし（サーバーダウンなど）
+                setSyncStatus(false);
             });
         }
 
-        function linkify(text) {
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            return text.replace(urlRegex, function(url) {
-                return `<a href="#" onclick="safeNavigate('${url}'); return false;" class="text-blue-400 hover:underline break-all"><i class="fas fa-external-link-alt text-xs mr-1"></i>${url}</a>`;
-            });
-        }
-
-        function safeNavigate(url) {
-            if (confirm(`【外部サイトへの移動確認】\n\nLoggiaを離れ、次のURLへ移動しますか？\n\n${url}`)) {
-                window.open(url, '_blank', 'noopener,noreferrer');
-            }
-        }
-
-        function previewImage(input, previewId) {
-            const preview = document.getElementById(previewId);
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.classList.remove('hidden');
-                }
-                reader.readAsDataURL(file);
-            } else {
-                preview.classList.add('hidden');
-            }
-        }
-
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                if (!file) resolve('');
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        function toggleAuthTab(tab) {
-            if (tab === 'login') {
-                document.getElementById('form-login').classList.remove('hidden');
-                document.getElementById('form-register').classList.add('hidden');
-                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold border-b-2 brand-color-text !border-[#5999FF]";
-                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
-            } else {
-                document.getElementById('form-login').classList.add('hidden');
-                document.getElementById('form-register').classList.remove('hidden');
-                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold brand-color-text !border-[#5999FF]";
-                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
-            }
-        }
-
-        async function handleRegister() {
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value.trim();
-            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
-            const birthday = document.getElementById('reg-birth').value;
-            const username = document.getElementById('reg-username').value.trim().replace('@','');
-            let display_name = document.getElementById('reg-display').value.trim();
-            const iconFile = document.getElementById('reg-icon-file').files[0];
-
-            if (!email || !password || !passwordConfirm || !birthday || !username) {
-                alert('必須項目が未入力です。'); return;
-            }
-            if (password !== passwordConfirm) {
-                alert('確認用パスワードが一致しません。'); return;
-            }
-            if (!display_name) display_name = '新参者';
-
-            let icon_url = 'logo.jpg';
-            if (iconFile) icon_url = await fileToBase64(iconFile);
-
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'register', username, display_name, icon_url, email, password, birthday }) 
-            })
+        // プロフィール閲覧モード突入
+        function viewUserProfile(username) {
+            selectedProfileUser = username;
+            document.getElementById('timeline-posts').innerHTML = '';
+            document.getElementById('timeline-post-box').classList.add('hidden');
+            document.getElementById('profile-back-btn').classList.remove('hidden');
+            
+            // プロフィール詳細をGASから引っ張る
+            fetch(`${GAS_API_URL}?action=getUserProfile&targetUser=${username}`)
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
-                    alert('Loggiaへようこそ！入居登録が完了しました。');
-                    loginSuccess(res.user);
-                } else { alert('エラー: ' + res.error); }
-            });
-        }
-
-        function handleLogin() {
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-            if (!email || !password) return;
-
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'login', email, password }) 
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (res.success) { loginSuccess(res.user); }
-                else { alert('ログイン失敗: ' + res.error); }
-            });
-        }
-
-        function loginSuccess(user) {
-            currentUser = user;
-            localStorage.setItem('loggia_user', JSON.stringify(user));
-            document.getElementById('auth-gate').classList.add('hidden');
-            updateUserUI();
-            loadTimeline(false);
-            startAutoRefresh();
-        }
-
-        function handleLogout() {
-            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
-            localStorage.removeItem('loggia_user');
-            location.reload();
-        }
-
-        function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") {
-            if (!url || url === 'logo.jpg') {
-                return `<img src="logo.jpg" class="${cssClass} bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`;
-            }
-            return `<img src="${url}" class="${cssClass}">`;
-        }
-
-        function updateUserUI() {
-            if (!currentUser) return;
-            document.getElementById('nav-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url);
-            document.getElementById('form-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url, "w-12 h-12 rounded-full object-cover");
-            document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人';
-            document.getElementById('nav-username').innerText = '@' + currentUser.username;
-        }
-
-        function switchTab(tabName) {
-            if (tabName === 'timeline') {
-                document.getElementById('tab-timeline').classList.remove('hidden');
-                document.getElementById('tab-profile-edit').classList.add('hidden');
-                loadTimeline(false);
-            } else {
-                document.getElementById('tab-timeline').classList.add('hidden');
-                document.getElementById('tab-profile-edit').classList.remove('hidden');
-                document.getElementById('edit-display-name').value = currentUser.display_name || '';
-                document.getElementById('edit-bio').value = currentUser.bio || '';
-                const preview = document.getElementById('edit-preview');
-                if (currentUser.icon_url) {
-                    preview.src = currentUser.icon_url;
-                    preview.classList.remove('hidden');
+                    const u = res.user;
+                    document.getElementById('timeline-header-title').innerText = `${u.display_name} の部屋`;
+                    document.getElementById('prof-card-avatar').innerHTML = getAvatarHtml(u.icon_url, "w-20 h-20 rounded-full object-cover border-2 border-zinc-700");
+                    document.getElementById('prof-card-display').innerText = u.display_name;
+                    document.getElementById('prof-card-username').innerText = `@${u.username}`;
+                    document.getElementById('prof-card-bio').innerText = u.bio || 'まだ自己紹介が書かれていません。';
+                    
+                    const badge = document.getElementById('prof-card-badge');
+                    if (u.status === 'Ban') { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30"; badge.innerText = "BAN"; }
+                    else if (u.status === 'Stop') { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30"; badge.innerText = "休眠中"; }
+                    else { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/30"; badge.innerText = "在住"; }
+                    
+                    document.getElementById('profile-card-area').classList.remove('hidden');
+                    loadTimeline(false);
                 }
-            }
+            });
         }
 
+        function openMyRoomProfile() {
+            switchTab('timeline');
+            viewUserProfile(currentUser.username);
+        }
+
+        function exitProfileMode() {
+            selectedProfileUser = null;
+            document.getElementById('profile-card-area').classList.add('hidden');
+            document.getElementById('profile-back-btn').classList.add('hidden');
+            document.getElementById('timeline-post-box').classList.remove('hidden');
+            document.getElementById('timeline-header-title').innerText = "Loggia の「今」";
+            loadTimeline(false);
+        }
+
+        // 📝 タイムライン描画（返信・リポストの表示構造化）
         function renderTimeline(posts) {
             const container = document.getElementById('timeline-posts');
             container.innerHTML = '';
             if (!posts || posts.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center text-gray-500">居間にはまだ誰もいないようです。</div>';
+                container.innerHTML = '<div class="p-8 text-center text-gray-500">投稿はまだありません。</div>';
                 return;
             }
             posts.forEach(post => {
-                const avatarHtml = getAvatarHtml(post.icon_url, "w-12 h-12 rounded-full object-cover flex-shrink-0");
+                const avatarHtml = `
+                    <div onclick="exitProfileMode(); viewUserProfile('${post.username}')" class="cursor-pointer hover:opacity-80 transition">
+                        ${getAvatarHtml(post.icon_url, "w-11 h-11 rounded-full object-cover flex-shrink-0")}
+                    </div>`;
                 const hasLiked = post.isLiked === true;
-                const formattedMessage = linkify(post.message || '');
+
+                // 返信タグの生成
+                let replyTagHtml = '';
+                if (post.post_type === 'reply' && post.reply_parent) {
+                    replyTagHtml = `<div class="text-xs text-gray-400 mb-1 bg-[#192734]/30 p-2 rounded border border-dashed twitter-border"><i class="far fa-comment-dots mr-1"></i> @${post.reply_to} への返信: <span class="text-gray-500 italic">${post.reply_parent.message}</span></div>`;
+                }
+
+                // リポストタグの生成
+                let repostTagHtml = '';
+                if (post.post_type === 'repost' && post.repost_parent) {
+                    repostTagHtml = `
+                        <div class="text-xs brand-color-text mb-1"><i class="fas fa-retweet mr-1"></i> @${post.username} がリポスト</div>
+                        <div class="bg-zinc-900/40 p-3 rounded-xl border twitter-border my-2 text-sm">
+                           <span class="font-bold text-gray-300">@${post.repost_of}</span>
+                           <p class="text-gray-400 mt-1">${post.repost_parent.message}</p>
+                        </div>`;
+                }
 
                 const postHtml = `
                     <div class="p-4 twitter-hover flex space-x-3 transition">
                         ${avatarHtml}
                         <div class="flex-1 min-w-0">
+                            ${post.post_type === 'repost' ? repostTagHtml : ''}
                             <div class="flex items-center space-x-2 text-sm">
-                                <span class="font-bold text-white truncate">${post.display_name}</span>
-                                <span class="text-gray-400 truncate">@${post.username}</span>
+                                <span onclick="exitProfileMode(); viewUserProfile('${post.username}')" class="font-bold text-white truncate cursor-pointer hover:underline">${post.display_name}</span>
+                                <span onclick="exitProfileMode(); viewUserProfile('${post.username}')" class="text-gray-400 truncate cursor-pointer">@${post.username}</span>
                                 <span class="text-gray-500">·</span>
                                 <span class="text-gray-500 text-xs">${post.timestamp}</span>
                             </div>
-                            <div class="text-white mt-1 break-words whitespace-pre-wrap text-[15px]">${formattedMessage}</div>
+                            
+                            ${post.post_type === 'reply' ? replyTagHtml : ''}
+                            ${post.post_type !== 'repost' ? `<div class="text-white mt-1 break-words whitespace-pre-wrap text-[15px]">${linkify(post.message || '')}</div>` : ''}
                             
                             <div class="flex justify-between max-w-md mt-3 text-gray-500 text-sm">
-                                <button onclick="alert('コメント機能は開発中です')" class="hover:text-[#5999FF] transition cursor-pointer">
-                                    <i class="far fa-comment mr-1"></i><span>0</span>
+                                <button onclick="openReplyModal('${post.id}', '${post.username}')" class="hover:text-[#5999FF] transition cursor-pointer flex items-center">
+                                    <i class="far fa-comment mr-1"></i><span>返信</span>
                                 </button>
-                                <button onclick="alert('リポスト機能は開発中です')" class="hover:text-green-500 transition cursor-pointer">
-                                    <i class="fas fa-retweet mr-1"></i><span>0</span>
+                                <button onclick="openRepostModal('${post.id}', '${post.username}')" class="hover:text-green-500 transition cursor-pointer flex items-center">
+                                    <i class="fas fa-retweet mr-1"></i><span>リポスト</span>
                                 </button>
                                 <button onclick="toggleLike('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}" data-liked="${hasLiked}">
                                     <i class="${hasLiked ? 'fas' : 'far'} fa-heart mr-1"></i><span>${post.likes || 0}</span>
@@ -404,76 +382,265 @@
             });
         }
 
-        function submitPost() {
-            const textarea = document.getElementById('post-message');
-            const message = textarea.value.trim();
+        // 💬 内製返信ポップアップ
+        function openReplyModal(postId, username) {
+            const html = `
+                <h3 class="text-lg font-bold mb-3">@${username} へ返信</h3>
+                <textarea id="modal-reply-msg" placeholder="返信を部屋に響かせる..." class="w-full bg-[#15202b] border twitter-border p-3 rounded-xl h-24 text-white outline-none focus:border-[#5999FF] resize-none"></textarea>
+                <div class="flex justify-end mt-3">
+                    <button onclick="submitReply('${postId}')" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full text-sm">返信を送信</button>
+                </div>`;
+            openCustomModal(html);
+        }
+        function submitReply(parentPostId) {
+            const message = document.getElementById('modal-reply-msg').value.trim();
             if (!message) return;
-
             fetch(GAS_API_URL, { 
                 method: 'POST', 
-                body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) 
-            })
+                body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message, reply_to: parentPostId, post_type: 'reply' }) 
+            }).then(() => { closeCustomModal(); loadTimeline(false); });
+        }
+
+        // 🔁 内製リポストポップアップ
+        function openRepostModal(postId, username) {
+            const html = `
+                <h3 class="text-lg font-bold mb-2">この投稿をリポストしますか？</h3>
+                <p class="text-gray-400 text-sm mb-4">@${username} さんの投稿をタイムラインの最上部に引き上げます。</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">やめる</button>
+                    <button onclick="submitRepost('${postId}')" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full text-sm">リポストを実行</button>
+                </div>`;
+            openCustomModal(html);
+        }
+        function submitRepost(targetPostId) {
+            fetch(GAS_API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: '', repost_of: targetPostId, post_type: 'repost' }) 
+            }).then(() => { closeCustomModal(); loadTimeline(false); });
+        }
+
+        // 💤 内製アカウント一時停止(Stop)手続き
+        function openStopConfirmModal() {
+            const html = `
+                <h3 class="text-lg font-bold text-amber-400 mb-2"><i class="fas fa-moon mr-2"></i>部屋を休眠状態(Stop)にしますか？</h3>
+                <p class="text-gray-300 text-sm leading-relaxed mb-4">
+                    一時停止すると自動的にログアウトされ、他の住人からは一時的に「休眠中の住人」と表示されます。<br>
+                    <span class="text-amber-300 font-bold">いつでもログインし直すだけで自動的に部屋を完全復活（再始動）させることができます。</span>
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
+                    <button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button>
+                </div>`;
+            openCustomModal(html);
+        }
+
+        // 💥 内製完全削除手続き
+        function openDeleteConfirmModal() {
+            const html = `
+                <h3 class="text-lg font-bold text-red-400 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）</h3>
+                <p class="text-gray-300 text-sm leading-relaxed mb-4">
+                    このボタンを押すと、あなたのユーザーデータ、およびこれまでのすべての投稿が<span class="text-red-400 font-bold underline">データベースから跡形もなく完全物理削除</span>されます。二度と元には戻せません。
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
+                    <button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button>
+                </div>`;
+            openCustomModal(html);
+        }
+
+        function submitChangeStatus(statusType) {
+            fetch(GAS_API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'changeStatus', username: currentUser.username, status: statusType }) 
+            }).then(() => { handleLogout(); });
+        }
+
+        function submitDeleteAccount() {
+            fetch(GAS_API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'deleteAccount', username: currentUser.username }) 
+            }).then(() => { handleLogout(); });
+        }
+
+        // 🔑 ログイン処理（Ban / Stop の条件分岐付き）
+        function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            if (!email || !password) return;
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) })
             .then(res => res.json())
             .then(res => {
-                if (res.success) {
-                    textarea.value = '';
-                    document.getElementById('char-count').innerText = "0 / 140";
-                    loadTimeline(false); // 🛠️ 投稿直後は明示的に閲覧数を+1して最新化
+                if (res.success) { loginSuccess(res.user); } 
+                else if (res.isBlocked) {
+                    // Ban または Stop ゲートの展開
+                    document.getElementById('auth-gate').classList.add('hidden');
+                    const blockGate = document.getElementById('block-gate');
+                    const iconArea = document.getElementById('block-icon-area');
+                    const titleArea = document.getElementById('block-title');
+                    const descArea = document.getElementById('block-desc');
+                    const actionArea = document.getElementById('block-action-area');
+                    
+                    blockGate.classList.remove('hidden');
+                    actionArea.innerHTML = '';
+
+                    if (res.status === 'Ban') {
+                        iconArea.innerText = "🚨";
+                        titleArea.innerText = "アカウントが凍結されています";
+                        titleArea.className = "text-2xl font-bold text-red-400";
+                        descArea.innerText = "規約違反または運営判断により、このアカウントは現在ロックされています。異議申し立ては受け付けていません。";
+                        actionArea.innerHTML = `<button onclick="location.reload()" class="bg-zinc-800 text-white px-6 py-2 rounded-full font-bold">戻る</button>`;
+                    } else if (res.status === 'Stop') {
+                        iconArea.innerText = "💤";
+                        titleArea.innerText = "お帰りなさい！現在休眠状態です";
+                        titleArea.className = "text-2xl font-bold text-amber-400";
+                        descArea.innerText = "あなたのアカウントは自らの意志で一時停止されています。下のボタンを押すことで、部屋のデータをすべて維持したまま即座に再始動できます！";
+                        actionArea.innerHTML = `
+                            <div class="flex flex-col space-y-3">
+                                <button onclick="reactivateAccount('${res.username}')" class="brand-color-bg text-white px-6 py-3 rounded-full font-bold shadow-lg hover:opacity-90">居間を再始動する</button>
+                                <button onclick="location.reload()" class="text-gray-400 text-sm hover:underline">ログインに戻る</button>
+                            </div>`;
+                    }
+                } else {
+                    alert('ログイン失敗: ' + res.error);
                 }
             });
         }
 
+        function reactivateAccount(username) {
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'reactivate', username: username }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    document.getElementById('block-gate').classList.add('hidden');
+                    loginSuccess(res.user);
+                } else { alert(res.error); }
+            });
+        }
+
+        // その他（UI更新・ベースシステム）
+        function loginSuccess(user) {
+            currentUser = user;
+            localStorage.setItem('loggia_user', JSON.stringify(user));
+            document.getElementById('auth-gate').classList.add('hidden');
+            updateUserUI();
+            exitProfileMode();
+        }
+        function handleLogout() {
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            localStorage.removeItem('loggia_user');
+            location.reload();
+        }
+        function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") {
+            if (!url || url === 'logo.jpg') return `<img src="logo.jpg" class="${cssClass} bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`;
+            return `<img src="${url}" class="${cssClass}">`;
+        }
+        function updateUserUI() {
+            if (!currentUser) return;
+            document.getElementById('nav-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url);
+            document.getElementById('form-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url, "w-12 h-12 rounded-full object-cover");
+            document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人';
+            document.getElementById('nav-username').innerText = '@' + currentUser.username;
+        }
+        function switchTab(tabName) {
+            if (tabName === 'timeline') {
+                document.getElementById('tab-timeline').classList.remove('hidden');
+                document.getElementById('tab-profile-edit').classList.add('hidden');
+                exitProfileMode();
+            } else {
+                document.getElementById('tab-timeline').classList.add('hidden');
+                document.getElementById('tab-profile-edit').classList.remove('hidden');
+                document.getElementById('edit-display-name').value = currentUser.display_name || '';
+                document.getElementById('edit-bio').value = currentUser.bio || '';
+                const preview = document.getElementById('edit-preview');
+                if (currentUser.icon_url) { preview.src = currentUser.icon_url; preview.classList.remove('hidden'); }
+            }
+        }
+        function linkify(text) {
+            return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="#" onclick="safeNavigate('${url}'); return false;" class="text-blue-400 hover:underline break-all"><i class="fas fa-external-link-alt text-xs mr-1"></i>${url}</a>`);
+        }
+        function safeNavigate(url) {
+            if (confirm(`外部サイトへ移動しますか？\n\n${url}`)) window.open(url, '_blank', 'noopener,noreferrer');
+        }
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { preview.src = e.target.result; preview.classList.remove('hidden'); };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                if (!file) resolve('');
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = e => reject(e);
+            });
+        }
+        function toggleAuthTab(tab) {
+            if (tab === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-register').classList.add('hidden');
+                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold border-b-2 brand-color-text !border-[#5999FF]";
+                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
+            } else {
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold brand-color-text !border-[#5999FF]";
+                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
+            }
+        }
+        async function handleRegister() {
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
+            const birthday = document.getElementById('reg-birth').value;
+            const username = document.getElementById('reg-username').value.trim().replace('@','');
+            let display_name = document.getElementById('reg-display').value.trim();
+            if (!email || !password || !passwordConfirm || !birthday || !username) { alert('必須項目が未入力です。'); return; }
+            if (password !== passwordConfirm) { alert('パスワード不一致'); return; }
+            if (!display_name) display_name = '新参者';
+            let icon_url = 'logo.jpg';
+            if (document.getElementById('reg-icon-file').files[0]) icon_url = await fileToBase64(document.getElementById('reg-icon-file').files[0]);
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'register', username, display_name, icon_url, email, password, birthday }) })
+            .then(res => res.json()).then(res => { if (res.success) { loginSuccess(res.user); } else { alert(res.error); } });
+        }
+        async function saveProfile() {
+            const displayName = document.getElementById('edit-display-name').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+            let iconUrl = currentUser.icon_url;
+            if (document.getElementById('edit-icon-file').files[0]) iconUrl = await fileToBase64(document.getElementById('edit-icon-file').files[0]);
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', username: currentUser.username, display_name: displayName, icon_url: iconUrl, bio: bio }) })
+            .then(res => res.json()).then(res => {
+                if (res.success) {
+                    currentUser.display_name = displayName || '新参者'; currentUser.icon_url = iconUrl; currentUser.bio = bio;
+                    localStorage.setItem('loggia_user', JSON.stringify(currentUser));
+                    updateUserUI(); alert('模様替え完了！'); switchTab('timeline');
+                }
+            });
+        }
         function toggleLike(postId, buttonEl) {
             const heartIcon = buttonEl.querySelector('i');
             const countSpan = buttonEl.querySelector('span');
             buttonEl.style.pointerEvents = 'none';
-
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'toggleLike', postId: postId, username: currentUser.username }) 
-            })
-            .then(res => res.json())
-            .then(res => {
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'toggleLike', postId: postId, username: currentUser.username }) })
+            .then(res => res.json()).then(res => {
                 buttonEl.style.pointerEvents = 'auto';
                 if (res.success) {
-                    buttonEl.setAttribute('data-liked', String(res.isLiked));
-                    countSpan.innerText = res.likesCount;
-                    if (res.isLiked) {
-                        heartIcon.className = 'fas fa-heart text-pink-500 mr-1';
-                        buttonEl.classList.add('text-pink-500');
-                    } else {
-                        heartIcon.className = 'far fa-heart mr-1';
-                        buttonEl.classList.remove('text-pink-500');
-                    }
+                    buttonEl.setAttribute('data-liked', String(res.isLiked)); countSpan.innerText = res.likesCount;
+                    if (res.isLiked) { heartIcon.className = 'fas fa-heart text-pink-500 mr-1'; buttonEl.classList.add('text-pink-500'); } 
+                    else { heartIcon.className = 'far fa-heart mr-1'; buttonEl.classList.remove('text-pink-500'); }
                 }
-            })
-            .catch(() => { buttonEl.style.pointerEvents = 'auto'; });
+            }).catch(() => { buttonEl.style.pointerEvents = 'auto'; });
         }
-
-        async function saveProfile() {
-            const displayName = document.getElementById('edit-display-name').value.trim();
-            const bio = document.getElementById('edit-bio').value.trim();
-            const iconFile = document.getElementById('edit-icon-file').files[0];
-
-            let iconUrl = currentUser.icon_url;
-            if (iconFile) iconUrl = await fileToBase64(iconFile);
-
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'updateProfile', username: currentUser.username, display_name: displayName, icon_url: iconUrl, bio: bio }) 
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    currentUser.display_name = displayName || '新参者';
-                    currentUser.icon_url = iconUrl;
-                    currentUser.bio = bio;
-                    localStorage.setItem('loggia_user', JSON.stringify(currentUser));
-                    updateUserUI();
-                    alert('模様替えが完了しました！');
-                    switchTab('timeline');
-                }
-            });
+        function submitPost() {
+            const textarea = document.getElementById('post-message'); const message = textarea.value.trim(); if (!message) return;
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) })
+            .then(res => res.json()).then(res => { if (res.success) { textarea.value = ''; document.getElementById('char-count').innerText = "0 / 140"; loadTimeline(false); } });
         }
     </script>
 </body>
