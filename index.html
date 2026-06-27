@@ -16,15 +16,48 @@
 </head>
 <body class="font-sans">
 
+    <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
+        <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl">
+            <div class="text-4xl text-center twitter-blue-text font-serif italic">Loggia</div>
+            <p class="text-center text-gray-400 text-sm">インターネットの居間へようこそ</p>
+            
+            <div class="flex border-b twitter-border text-center">
+                <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 border-transparent twitter-blue-text !border-[#1d9bf0]">ログイン</button>
+                <button onclick="toggleAuthTab('register')" id="btn-tab-register" class="w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent">入居申し込み</button>
+            </div>
+
+            <div id="form-login" class="space-y-4">
+                <input type="email" id="login-email" placeholder="メールアドレス" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#1d9bf0]">
+                <input type="password" id="login-password" placeholder="パスワード" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#1d9bf0]">
+                <button onclick="handleLogin()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">居間に入る</button>
+            </div>
+
+            <div id="form-register" class="space-y-4 hidden h-[400px] overflow-y-auto pr-1">
+                <p class="text-xs text-orange-400">*必須項目を入力してくださいっぴ</p>
+                <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
+                <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">誕生日 (年齢確認用・非公開・必須)</label>
+                    <input type="date" id="reg-birth" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none text-gray-400">
+                </div>
+                <input type="text" id="reg-username" placeholder="住人ID (英数字・必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
+                <input type="text" id="reg-display" placeholder="表札の名前 (空欄ならGuest)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
+                <input type="text" id="reg-icon" placeholder="アイコン画像URL (任意)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
+                <button onclick="handleRegister()" class="w-full twitter-blue text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">新生活を始める</button>
+            </div>
+        </div>
+    </div>
+
     <div class="max-w-6xl mx-auto flex min-h-screen">
         
-        <header class="w-1/4 border-r twitter-border p-4 flex flex-col justify-between hidden md:flex">
+        <header class="w-1/4 border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex">
             <div class="space-y-4 text-xl font-bold">
                 <div class="text-3xl p-2 twitter-blue-text font-serif italic tracking-wider">Loggia</div>
                 <button onclick="switchTab('timeline')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer"><i class="fas fa-couch mr-4"></i>居間 (ホーム)</button>
                 <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer"><i class="fas fa-door-open mr-4"></i>模様替え (設定)</button>
+                <button onclick="handleLogout()" class="w-full text-left p-3 rounded-full text-red-400 twitter-hover cursor-pointer"><i class="fas fa-sign-out-alt mr-4"></i>退出する</button>
             </div>
-            <div class="flex items-center space-x-3 p-2 border twitter-border rounded-full">
+            <div class="flex items-center space-x-3 p-2 border mt-auto twitter-border rounded-full">
                 <img id="nav-avatar" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png" class="w-10 h-10 rounded-full object-cover">
                 <div class="overflow-hidden">
                     <div id="nav-display-name" class="font-bold truncate">ゲスト</div>
@@ -33,14 +66,12 @@
             </div>
         </header>
 
-        <main class="flex-1 border-r twitter-border min-h-screen">
-            
+        <main class="flex-1 border-r twitter-border min-h-screen pb-16 md:pb-0">
             <section id="tab-timeline" class="block">
-                <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center">
+                <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
                     <span>Loggia の「今」</span>
                     <span class="text-xs font-normal text-gray-400">インターネットの居間と今</span>
                 </div>
-                
                 <div class="border-b twitter-border p-4 flex space-x-3">
                     <img id="form-avatar" src="https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png" class="w-12 h-12 rounded-full object-cover">
                     <div class="flex-1">
@@ -51,7 +82,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="timeline-loading" class="p-8 text-center text-gray-400"><i class="fas fa-spinner animate-spin mr-2"></i>居間をのぞき中...</div>
                 <div id="timeline-posts" class="divide-y twitter-border"></div>
             </section>
@@ -60,58 +90,126 @@
                 <div class="font-bold text-xl mb-6 border-b twitter-border pb-2">自室の模様替え（プロフィール設定）</div>
                 <div class="space-y-4 max-w-md">
                     <div>
-                        <label class="block text-gray-400 text-sm mb-1">住人ID（英数字・変更すると別垢扱いになるから注意な！！）</label>
-                        <input type="text" id="edit-username" value="guest" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none focus:border-[#1d9bf0]">
-                    </div>
-                    <div>
                         <label class="block text-gray-400 text-sm mb-1">表札の名前（表示名）</label>
-                        <input type="text" id="edit-display-name" value="ゲスト" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none focus:border-[#1d9bf0]">
+                        <input type="text" id="edit-display-name" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none">
                     </div>
                     <div>
                         <label class="block text-gray-400 text-sm mb-1">アイコン画像URL</label>
-                        <input type="text" id="edit-icon-url" placeholder="https://example.com/avatar.png" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none focus:border-[#1d9bf0]">
+                        <input type="text" id="edit-icon-url" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none">
                     </div>
                     <div>
                         <label class="block text-gray-400 text-sm mb-1">自己紹介・部屋の説明</label>
-                        <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none focus:border-[#1d9bf0] h-24 resize-none"></textarea>
+                        <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2 rounded outline-none h-24 resize-none"></textarea>
                     </div>
                     <button onclick="saveProfile()" class="twitter-blue text-white font-bold px-6 py-2 rounded-full cursor-pointer hover:opacity-90">模様替えを保存</button>
                 </div>
             </section>
         </main>
 
-        <footer class="fixed bottom-0 left-0 right-0 bg-[#15202b] border-t twitter-border flex justify-around p-3 md:hidden">
+        <footer class="fixed bottom-0 left-0 right-0 bg-[#15202b] border-t twitter-border flex justify-around p-3 md:hidden z-20">
             <button onclick="switchTab('timeline')" class="text-2xl text-gray-400 focus:text-white"><i class="fas fa-couch"></i></button>
             <button onclick="switchTab('profile-edit')" class="text-2xl text-gray-400 focus:text-white"><i class="fas fa-door-open"></i></button>
+            <button onclick="handleLogout()" class="text-2xl text-red-400"><i class="fas fa-sign-out-alt"></i></button>
         </footer>
     </div>
 
     <script>
-        // 🚨【超重要】ここにGoogle Keepに保存したGASの「ウェブアプリURL」を貼り付けてください！
-        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyCnsVLKorpz98tD-aycq2aodvafbMpCtjql-mGcFmi1HOA36cC8S3RAkZEqthbVbxk/exec';
+        // 🚨【超重要】ここにあなたのGASの「ウェブアプリURL」を貼り付けてください！
+        const GAS_API_URL = 'ここにあなたのGASのURLを入れる';
 
-        let currentUser = {
-            username: localStorage.getItem('sns_username') || 'guest',
-            display_name: localStorage.getItem('sns_display_name') || 'ゲスト',
-            icon_url: localStorage.getItem('sns_icon_url') || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
-            bio: localStorage.getItem('sns_bio') || ''
-        };
+        let currentUser = null;
 
         window.onload = function() {
-            updateUserUI();
-            loadTimeline();
-            
-            document.getElementById('edit-username').value = currentUser.username;
-            document.getElementById('edit-display-name').value = currentUser.display_name;
-            document.getElementById('edit-icon-url').value = currentUser.icon_url === 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png' ? '' : currentUser.icon_url;
-            document.getElementById('edit-bio').value = currentUser.bio;
+            const cached = localStorage.getItem('loggia_user');
+            if (cached) {
+                currentUser = JSON.parse(cached);
+                updateUserUI();
+                loadTimeline();
+            } else {
+                document.getElementById('auth-gate').classList.remove('hidden');
+            }
 
             document.getElementById('post-message').oninput = function() {
                 document.getElementById('char-count').innerText = this.value.length + " / 140";
             };
         };
 
+        function toggleAuthTab(tab) {
+            if (tab === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-register').classList.add('hidden');
+                document.getElementById('btn-tab-login').classList.add('twitter-blue-text', '!border-[#1d9bf0]');
+                document.getElementById('btn-tab-register').classList.remove('twitter-blue-text', '!border-[#1d9bf0]');
+            } else {
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('btn-tab-register').classList.add('twitter-blue-text', '!border-[#1d9bf0]');
+                document.getElementById('btn-tab-login').classList.remove('twitter-blue-text', '!border-[#1d9bf0]');
+            }
+        }
+
+        function handleRegister() {
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const birthdate = document.getElementById('reg-birth').value;
+            const username = document.getElementById('reg-username').value.trim().replace('@','');
+            const display_name = document.getElementById('reg-display').value.trim();
+            const icon_url = document.getElementById('reg-icon').value.trim();
+
+            if (!email || !password || !birthdate || !username) {
+                alert('必須項目が埋まっていないっぴ！');
+                return;
+            }
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'register', email, password, birthdate, username, icon_url, display_name }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    alert('入居申し込みが完了したっぴ！');
+                    loginSuccess(res.user);
+                } else {
+                    alert('登録エラーだっぴ：' + res.error);
+                }
+            });
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            if (!email || !password) return;
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    loginSuccess(res.user);
+                } else {
+                    alert('エラーだっぴ：' + res.error);
+                }
+            });
+        }
+
+        function loginSuccess(user) {
+            currentUser = user;
+            localStorage.setItem('loggia_user', JSON.stringify(user));
+            document.getElementById('auth-gate').classList.add('hidden');
+            updateUserUI();
+            
+            document.getElementById('edit-display-name').value = currentUser.display_name;
+            document.getElementById('edit-icon-url').value = currentUser.icon_url;
+            document.getElementById('edit-bio').value = currentUser.bio || '';
+            
+            loadTimeline();
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('loggia_user');
+            location.reload();
+        }
+
         function updateUserUI() {
+            if (!currentUser) return;
             const avatar = currentUser.icon_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
             document.getElementById('nav-avatar').src = avatar;
             document.getElementById('form-avatar').src = avatar;
@@ -132,36 +230,23 @@
 
         function loadTimeline() {
             document.getElementById('timeline-loading').classList.remove('hidden');
-            
             fetch(`${GAS_API_URL}?action=getTimeline`)
-                .then(res => res.json())
-                .then(res => {
-                    document.getElementById('timeline-loading').classList.add('hidden');
-                    if (!res.success) {
-                        alert('データの取得に失敗したっぴ：' + res.error);
-                        return;
-                    }
-                    renderTimeline(res.data);
-                })
-                .catch(err => {
-                    document.getElementById('timeline-loading').classList.add('hidden');
-                    console.error(err);
-                });
+            .then(res => res.json())
+            .then(res => {
+                document.getElementById('timeline-loading').classList.add('hidden');
+                if (res.success) renderTimeline(res.data);
+            }).catch(() => document.getElementById('timeline-loading').classList.add('hidden'));
         }
 
         function renderTimeline(posts) {
             const container = document.getElementById('timeline-posts');
             container.innerHTML = '';
-
             if (posts.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center text-gray-500">居間にはまだ誰もいないようです。最初の声をかけてみましょう！</div>';
+                container.innerHTML = '<div class="p-8 text-center text-gray-500">居間にはまだ誰もいないようです。</div>';
                 return;
             }
-
             posts.forEach(post => {
                 const avatar = post.icon_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
-                const replyLabel = post.reply_to ? `<div class="text-xs text-gray-500 mb-1"><i class="fas fa-reply mr-1"></i>話しかけ先: @${post.reply_to}</div>` : '';
-                
                 const postHtml = `
                     <div class="p-4 twitter-hover flex space-x-3 transition">
                         <img src="${avatar}" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
@@ -170,148 +255,65 @@
                                 <span class="font-bold text-white truncate">${post.display_name}</span>
                                 <span class="text-gray-400 truncate">@${post.username}</span>
                                 <span class="text-gray-500">·</span>
-                                <span class="text-gray-500 text-xs whitespace-nowrap">${post.timestamp}</span>
+                                <span class="text-gray-500 text-xs">${post.timestamp}</span>
                             </div>
-                            ${replyLabel}
                             <div class="text-white mt-1 break-words whitespace-pre-wrap">${post.message}</div>
-                            
                             <div class="flex space-x-12 mt-3 text-gray-400 text-sm">
-                                <button onclick="openReply('${post.username}', '${post.id}')" class="hover:text-[#1d9bf0] transition cursor-pointer">
-                                    <i class="far fa-comment mr-2"></i>話しかける
-                                </button>
                                 <button onclick="likePost('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer">
                                     <i class="far fa-heart mr-2"></i><span>${post.likes}</span>
                                 </button>
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 container.insertAdjacentHTML('beforeend', postHtml);
             });
         }
 
-        function submitPost(replyToUsername = '') {
+        function submitPost() {
             const textarea = document.getElementById('post-message');
             const message = textarea.value.trim();
             if (!message) return;
 
-            const btn = event.target;
-            btn.disabled = true;
-            btn.innerText = "今はね...送信中";
-
-            const payload = {
-                action: 'createPost',
-                username: currentUser.username,
-                message: message,
-                reply_to: replyToUsername
-            };
-
-            fetch(GAS_API_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            })
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) })
             .then(res => res.json())
             .then(res => {
-                btn.disabled = false;
-                btn.innerText = "呟く";
                 if (res.success) {
                     textarea.value = '';
-                    document.getElementById('char-count').innerText = "0 / 140";
-                    textarea.placeholder = "いまどうしてんの";
                     loadTimeline();
-                } else {
-                    alert('なんか投稿に失敗してしまったらしい！！もっかい！！：' + res.error);
                 }
-            })
-            .catch(err => {
-                btn.disabled = false;
-                btn.innerText = "呟く";
-                console.error(err);
             });
-        }
-
-        function openReply(username, postId) {
-            const textarea = document.getElementById('post-message');
-            textarea.placeholder = `@${username} さんに話しかけてる...`;
-            textarea.focus();
-            const sendBtn = document.querySelector('#tab-timeline button[onclick^="submitPost"]');
-            sendBtn.setAttribute('onclick', `submitPost('${username}')`);
         }
 
         function likePost(postId, buttonEl) {
             const heartIcon = buttonEl.querySelector('i');
             const countSpan = buttonEl.querySelector('span');
-            buttonEl.disabled = true;
-
-            fetch(GAS_API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'likePost', postId: postId })
-            })
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'likePost', postId }) })
             .then(res => res.json())
             .then(res => {
-                buttonEl.disabled = false;
                 if (res.success) {
                     countSpan.innerText = res.newLikes;
-                    heartIcon.classList.remove('far');
-                    heartIcon.classList.add('fas', 'text-pink-500');
-                    buttonEl.classList.add('text-pink-500');
+                    heartIcon.className = 'fas fa-heart text-pink-500';
                 }
-            })
-            .catch(err => {
-                buttonEl.disabled = false;
-                console.error(err);
             });
         }
 
         function saveProfile() {
-            const username = document.getElementById('edit-username').value.trim().replace('@', '');
             const displayName = document.getElementById('edit-display-name').value.trim();
             const iconUrl = document.getElementById('edit-icon-url').value.trim();
             const bio = document.getElementById('edit-bio').value.trim();
 
-            if (!username || !displayName) {
-                alert('あれ...なんかおかしいな...あっ！住人IDと表札の名前は必須だよ！');
-                return;
-            }
-
-            const payload = {
-                action: 'updateProfile',
-                username: username,
-                display_name: displayName,
-                icon_url: iconUrl,
-                bio: bio
-            };
-
-            const btn = event.target;
-            btn.disabled = true;
-            btn.innerText = "今保存しようとしてる...";
-
-            fetch(GAS_API_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            })
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', username: currentUser.username, display_name: displayName, icon_url: iconUrl, bio: bio }) })
             .then(res => res.json())
             .then(res => {
-                btn.disabled = false;
-                btn.innerText = "模様替えを保存";
                 if (res.success) {
-                    localStorage.setItem('sns_username', username);
-                    localStorage.setItem('sns_display_name', displayName);
-                    localStorage.setItem('sns_icon_url', iconUrl);
-                    localStorage.setItem('sns_bio', bio);
-
-                    currentUser = { username, display_name, icon_url: iconUrl, bio };
+                    currentUser.display_name = displayName || 'Guest';
+                    currentUser.icon_url = iconUrl;
+                    currentUser.bio = bio;
+                    localStorage.setItem('loggia_user', JSON.stringify(currentUser));
                     updateUserUI();
-                    alert('模様替えが完了したので居間に戻るッピ！。');
+                    alert('模様替えを保存したっぴ！');
                     switchTab('timeline');
-                } else {
-                    alert('なんとプロフィールの保存に失敗してしまった！！：' + res.error);
                 }
-            })
-            .catch(err => {
-                btn.disabled = false;
-                btn.innerText = "模様替えを保存";
-                console.error(err);
             });
         }
     </script>
