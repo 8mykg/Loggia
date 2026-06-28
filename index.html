@@ -83,11 +83,14 @@
                     <img id="reg-preview" src="logo.jpg" class="w-12 h-12 rounded-full object-cover hidden">
                 </div>
 
-                <div class="flex justify-center py-2">
-                    <div class="g-recaptcha" data-sitekey="6LdkmDotAAAAAMCDVxxqrJv002Z252KKbeZug_Ci" data-theme="dark"></div>
+                <div class="flex justify-center">
+                    <div id="recaptcha-invisible" class="g-recaptcha" 
+                         data-sitekey="6LfAsjotAAAAAOkxB_cNi-4FCWENgZooV1k24ZwZ" 
+                         data-callback="onInvisibleSubmit" 
+                         data-size="invisible"></div>
                 </div>
 
-                <button id="btn-reg-submit" onclick="executeRegisterAction()" class="w-full bg-[#5999FF] text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
+                <button id="btn-reg-submit" onclick="startRegisterAction()" class="w-full bg-[#5999FF] text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
                     <span>入居を確定する</span>
                 </button>
             </div>
@@ -564,17 +567,11 @@
             });
         }
 
-         // 🤖 【変える部分】住人登録処理（確認用パスワードチェック＆reCAPTCHA動作不良改善版）
-        async function executeRegisterAction() {
-            const email = document.getElementById('reg-email').value.trim();
+// 🤖 【変える部分】非表示reCAPTCHA起動用トリガー（パスワードチェックをしてから起動）
+        function startRegisterAction() {
             const password = document.getElementById('reg-password').value.trim();
-            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim(); // 追加
-            const birthday = document.getElementById('reg-birth').value;
-            const username = document.getElementById('reg-username').value.trim().replace('@','');
-            let display_name = document.getElementById('reg-display').value.trim() || '新参者';
-            let icon_url = 'logo.jpg';
+            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
 
-            // 1. パスワードの入力・一致チェック
             if (!password || !passwordConfirm) {
                 alert('パスワードと確認用パスワードの両方を入力してください。');
                 return;
@@ -584,20 +581,20 @@
                 return;
             }
 
-            // 2. reCAPTCHAのチェックボックス検証
-            let token = "";
-            try {
-                token = grecaptcha.getResponse();
-            } catch (e) {
-                console.error("reCAPTCHAがまだ読み込まれていないか、エラーが発生しています", e);
-            }
+            // パスワードが一致していれば、裏で自動的にreCAPTCHAを実行
+            grecaptcha.execute();
+        }
 
-            if (!token) {
-                alert('あなたがロボットではないことを証明するために、reCAPTCHAのチェックボックスをオンにしてください。');
-                return;
-            }
+        // 🤖 【変える部分】Googleの認証が成功した時に、自動でGASへ通信を飛ばす関数
+        async function onInvisibleSubmit(token) {
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const birthday = document.getElementById('reg-birth').value;
+            const username = document.getElementById('reg-username').value.trim().replace('@','');
+            let display_name = document.getElementById('reg-display').value.trim() || '新参者';
+            let icon_url = 'logo.jpg';
 
-            // 3. GASへデータを送信
+            // GAS（バックエンド）へデータを送信
             fetch(GAS_API_URL, { 
                 method: 'POST', 
                 body: JSON.stringify({ 
@@ -617,15 +614,15 @@
                     loginSuccess(res.user); 
                 } else { 
                     alert(res.error); 
-                    if (typeof grecaptcha !== 'undefined') grecaptcha.reset(); // エラー時はreCAPTCHAをリセット
+                    grecaptcha.reset(); // エラー時はreCAPTCHAを安全にリセット
                 } 
             })
             .catch(err => {
                 alert('通信エラーが発生しました。時間を置いて再度お試しください。');
-                if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+                grecaptcha.reset();
             });
         }
-
+        
         function saveProfile() {
             const dName = document.getElementById('edit-display-name').value.trim();
             const bio = document.getElementById('edit-bio').value.trim();
