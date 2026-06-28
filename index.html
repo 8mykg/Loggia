@@ -69,9 +69,12 @@
                 </button>
             </div>
 
-             <div id="form-register" class="space-y-4 hidden max-h-[60vh] overflow-y-auto pr-1">
+            <div id="form-register" class="space-y-4 hidden max-h-[60vh] overflow-y-auto pr-1">
                 <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
+                
                 <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
+                <input type="password" id="reg-password-confirm" placeholder="パスワード（確認用・必須）" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
+                
                 <input type="date" id="reg-birth" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none text-gray-400">
                 <input type="text" id="reg-username" placeholder="住人ID (英数字・必須)" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
                 <input type="text" id="reg-display" placeholder="表札の名前" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
@@ -81,7 +84,7 @@
                 </div>
 
                 <div class="flex justify-center py-2">
-                    <div class="g-recaptcha" data-sitekey="6Ld4iDotAAAAALMSduIvA4lsgerVGZ5Sd1qg3AOM" data-theme="dark"></div>
+                    <div class="g-recaptcha" data-sitekey="あなたのreCAPTCHAサイトキー" data-theme="dark"></div>
                 </div>
 
                 <button id="btn-reg-submit" onclick="executeRegisterAction()" class="w-full bg-[#5999FF] text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
