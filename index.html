@@ -215,6 +215,8 @@
     </footer>
 
     <script>
+        // 🌐 Loggia バックエンド連携設定
+        // ⚠️ 注意: 権限を許可した後に新バージョンで発行された最新のGASのURLを貼り付けてください
         const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyCnsVLKorpz98tD-aycq2aodvafbMpCtjql-mGcFmi1HOA36cC8S3RAkZEqthbVbxk/exec';
 
         let currentUser = null;
@@ -622,7 +624,7 @@
                 grecaptcha.reset();
             });
         }
-        
+
         function saveProfile() {
             const dName = document.getElementById('edit-display-name').value.trim();
             const bio = document.getElementById('edit-bio').value.trim();
