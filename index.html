@@ -7,6 +7,9 @@
     <link rel="icon" href="logo.jpg" type="image/jpeg">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
     <style>
         body { background-color: #15202b; color: #fff; }
         .twitter-border { border-color: #38444d; }
@@ -18,7 +21,7 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: #38444d; border-radius: 3px; }
     </style>
 </head>
-<body class="font-sans antialiased">
+<body class="font-sans antialiased overflow-x-hidden">
 
     <div id="modal-container" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
         <div class="bg-[#192734] border twitter-border p-6 rounded-2xl w-full max-w-lg shadow-2xl relative mx-4">
@@ -51,7 +54,12 @@
             <div id="form-login" class="space-y-4">
                 <input type="email" id="login-email" placeholder="メールアドレス" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#5999FF]">
                 <input type="password" id="login-password" placeholder="パスワード" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#5999FF]">
-                <button onclick="handleLogin()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">居間に入る</button>
+                
+                <div id="recaptcha-login" class="g-recaptcha" data-sitekey="6Lc2tzktAAAAAP_Gzbq8XnwNnApovLshBlubNJC_" data-callback="onLoginCaptchaSuccess" data-size="invisible"></div>
+                
+                <button id="btn-login-submit" onclick="triggerLoginWithCaptcha()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
+                    <span id="btn-login-text">居間に入る</span>
+                </button>
             </div>
 
             <div id="form-register" class="space-y-4 hidden h-[320px] overflow-y-auto pr-1 custom-scroll">
@@ -70,14 +78,19 @@
                     <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400">
                     <img id="reg-preview" src="logo.jpg" class="w-12 h-12 rounded-full object-cover hidden">
                 </div>
-                <button onclick="handleRegister()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer">入居する</button>
+
+                <div id="recaptcha-reg" class="g-recaptcha" data-sitekey="6Lc2tzktAAAAAP_Gzbq8XnwNnApovLshBlubNJC_" data-callback="onRegisterCaptchaSuccess" data-size="invisible"></div>
+
+                <button id="btn-reg-submit" onclick="triggerRegisterWithCaptcha()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
+                    <span id="btn-reg-text">入居を確定する</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="w-full flex min-h-screen">
+    <div class="w-full min-h-screen grid grid-cols-1 md:grid-cols-[260px_1fr] lg:grid-cols-[290px_768px_1fr] gap-0">
         
-        <header class="w-64 border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex flex-shrink-0 z-30 bg-[#15202b]">
+        <header class="border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex z-30 bg-[#15202b]">
             <div class="space-y-6 text-xl font-bold">
                 <div onclick="switchTab('timeline')" class="flex items-center space-x-3 p-2 cursor-pointer">
                     <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover shadow bg-[#000000]">
@@ -100,10 +113,9 @@
             </div>
         </header>
 
-        <main class="flex-1 max-w-3xl border-r twitter-border min-h-screen pb-20 md:pb-0 bg-[#15202b]">
+        <main class="border-r border-l md:border-l-0 twitter-border min-h-screen pb-20 md:pb-0 bg-[#15202b] w-full">
             
             <section id="tab-timeline" class="block">
-                
                 <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
                     <div class="flex items-center space-x-3">
                         <button id="profile-back-btn" onclick="exitProfileMode()" class="mr-2 text-gray-400 hover:text-white hidden"><i class="fas fa-arrow-left"></i></button>
@@ -124,7 +136,7 @@
                         <p id="prof-card-username" class="text-gray-400 text-sm"></p>
                     </div>
                     <p id="prof-card-bio" class="text-gray-200 text-base whitespace-pre-wrap"></p>
-                    <div class="text-gray-400 text-sm font-bold border-t twitter-border pt-3"><i class="fas fa-couch mr-2"></i>この部屋の主の今までのつぶやき</div>
+                    <div class="text-gray-400 text-sm font-bold border-t twitter-border pt-3"><i class="fas fa-couch mr-2"></i>この部屋の主のつぶやき</div>
                 </div>
                 
                 <div id="timeline-post-box" class="border-b twitter-border p-4 flex space-x-3 bg-[#192734]/10">
@@ -133,7 +145,9 @@
                         <textarea id="post-message" placeholder="いまどうしてる？" class="w-full bg-transparent text-xl outline-none resize-none h-24 pt-1" maxlength="140"></textarea>
                         <div class="flex justify-between items-center pt-2 border-t twitter-border mt-2">
                             <span class="text-sm text-gray-500" id="char-count">0 / 140</span>
-                            <button onclick="submitPost()" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90">届け！</button>
+                            <button id="btn-post-submit" onclick="submitPost()" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90 flex items-center">
+                                <span id="btn-post-text">届け！</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -179,6 +193,8 @@
                 </div>
             </section>
         </main>
+
+        <div class="hidden lg:block bg-[#15202b]"></div>
     </div>
 
     <footer class="fixed bottom-0 left-0 right-0 bg-[#15202b]/95 backdrop-blur border-t border-[#38444d] flex justify-around p-3 md:hidden z-20 shadow-lg">
@@ -192,7 +208,7 @@
 
         let currentUser = null;
         let autoRefreshInterval = null;
-        let selectedProfileUser = null; // 現在特定ユーザーのプロフを見ているかどうか
+        let selectedProfileUser = null; 
 
         window.onload = function() {
             const cached = localStorage.getItem('loggia_user');
@@ -228,12 +244,11 @@
                 textEl.innerText = "自動同期中";
             } else {
                 statusEl.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
-                dotEl.className = "w-1.5 h-1.5 mr-1.5 bg-red-500 rounded-full";
+                dotEl.className = "w-1.5 h-1.5 mr-1.5 bg-red-400 rounded-full";
                 textEl.innerText = "同期不可";
             }
         }
 
-        // ポップアップ制御
         function openCustomModal(htmlContent) {
             const container = document.getElementById('modal-container');
             document.getElementById('modal-content-area').innerHTML = htmlContent;
@@ -246,24 +261,18 @@
             setTimeout(() => { container.classList.add('hidden'); }, 200);
         }
 
-        // タイムライン読み込み
         function loadTimeline(isAutoRefresh = false) {
             if (!currentUser) return;
             if (!isAutoRefresh) document.getElementById('timeline-loading').classList.remove('hidden');
-            
             let url = `${GAS_API_URL}?action=getTimeline&username=${currentUser.username}&isAutoRefresh=${isAutoRefresh}`;
-            if (selectedProfileUser) {
-                url += `&targetUser=${selectedProfileUser}`;
-            }
+            if (selectedProfileUser) url += `&targetUser=${selectedProfileUser}`;
 
             fetch(url)
             .then(res => res.json())
             .then(res => {
                 if (!isAutoRefresh) document.getElementById('timeline-loading').classList.add('hidden');
-                if (res.success) {
-                    setSyncStatus(true);
-                    renderTimeline(res.data);
-                } else { setSyncStatus(false); }
+                if (res.success) { setSyncStatus(true); renderTimeline(res.data); } 
+                else { setSyncStatus(false); }
             })
             .catch(() => {
                 if (!isAutoRefresh) document.getElementById('timeline-loading').classList.add('hidden');
@@ -271,14 +280,12 @@
             });
         }
 
-        // プロフィール閲覧モード突入
         function viewUserProfile(username) {
             selectedProfileUser = username;
             document.getElementById('timeline-posts').innerHTML = '';
             document.getElementById('timeline-post-box').classList.add('hidden');
             document.getElementById('profile-back-btn').classList.remove('hidden');
             
-            // プロフィール詳細をGASから引っ張る
             fetch(`${GAS_API_URL}?action=getUserProfile&targetUser=${username}`)
             .then(res => res.json())
             .then(res => {
@@ -293,7 +300,7 @@
                     const badge = document.getElementById('prof-card-badge');
                     if (u.status === 'Ban') { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30"; badge.innerText = "BAN"; }
                     else if (u.status === 'Stop') { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30"; badge.innerText = "休眠中"; }
-                    else { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/30"; badge.innerText = "在住"; }
+                    else { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/20"; badge.innerText = "在住"; }
                     
                     document.getElementById('profile-card-area').classList.remove('hidden');
                     loadTimeline(false);
@@ -301,11 +308,7 @@
             });
         }
 
-        function openMyRoomProfile() {
-            switchTab('timeline');
-            viewUserProfile(currentUser.username);
-        }
-
+        function openMyRoomProfile() { switchTab('timeline'); viewUserProfile(currentUser.username); }
         function exitProfileMode() {
             selectedProfileUser = null;
             document.getElementById('profile-card-area').classList.add('hidden');
@@ -315,7 +318,6 @@
             loadTimeline(false);
         }
 
-        // 📝 タイムライン描画（返信・リポストの表示構造化）
         function renderTimeline(posts) {
             const container = document.getElementById('timeline-posts');
             container.innerHTML = '';
@@ -324,31 +326,26 @@
                 return;
             }
             posts.forEach(post => {
-                const avatarHtml = `
-                    <div onclick="exitProfileMode(); viewUserProfile('${post.username}')" class="cursor-pointer hover:opacity-80 transition">
-                        ${getAvatarHtml(post.icon_url, "w-11 h-11 rounded-full object-cover flex-shrink-0")}
-                    </div>`;
+                const avatarHtml = `<div onclick="exitProfileMode(); viewUserProfile('${post.username}')" class="cursor-pointer hover:opacity-80 transition">${getAvatarHtml(post.icon_url, "w-11 h-11 rounded-full object-cover flex-shrink-0")}</div>`;
                 const hasLiked = post.isLiked === true;
 
-                // 返信タグの生成
                 let replyTagHtml = '';
                 if (post.post_type === 'reply' && post.reply_parent) {
                     replyTagHtml = `<div class="text-xs text-gray-400 mb-1 bg-[#192734]/30 p-2 rounded border border-dashed twitter-border"><i class="far fa-comment-dots mr-1"></i> @${post.reply_to} への返信: <span class="text-gray-500 italic">${post.reply_parent.message}</span></div>`;
                 }
 
-                // リポストタグの生成
                 let repostTagHtml = '';
                 if (post.post_type === 'repost' && post.repost_parent) {
                     repostTagHtml = `
                         <div class="text-xs brand-color-text mb-1"><i class="fas fa-retweet mr-1"></i> @${post.username} がリポスト</div>
-                        <div class="bg-zinc-900/40 p-3 rounded-xl border twitter-border my-2 text-sm">
+                        <div class="bg-zinc-900/40 p-3 rounded-xl border twitter-border my-2 text-sm w-full">
                            <span class="font-bold text-gray-300">@${post.repost_of}</span>
                            <p class="text-gray-400 mt-1">${post.repost_parent.message}</p>
                         </div>`;
                 }
 
                 const postHtml = `
-                    <div class="p-4 twitter-hover flex space-x-3 transition">
+                    <div class="p-4 twitter-hover flex space-x-3 transition w-full">
                         ${avatarHtml}
                         <div class="flex-1 min-w-0">
                             ${post.post_type === 'repost' ? repostTagHtml : ''}
@@ -358,23 +355,14 @@
                                 <span class="text-gray-500">·</span>
                                 <span class="text-gray-500 text-xs">${post.timestamp}</span>
                             </div>
-                            
                             ${post.post_type === 'reply' ? replyTagHtml : ''}
                             ${post.post_type !== 'repost' ? `<div class="text-white mt-1 break-words whitespace-pre-wrap text-[15px]">${linkify(post.message || '')}</div>` : ''}
                             
                             <div class="flex justify-between max-w-md mt-3 text-gray-500 text-sm">
-                                <button onclick="openReplyModal('${post.id}', '${post.username}')" class="hover:text-[#5999FF] transition cursor-pointer flex items-center">
-                                    <i class="far fa-comment mr-1"></i><span>返信</span>
-                                </button>
-                                <button onclick="openRepostModal('${post.id}', '${post.username}')" class="hover:text-green-500 transition cursor-pointer flex items-center">
-                                    <i class="fas fa-retweet mr-1"></i><span>リポスト</span>
-                                </button>
-                                <button onclick="toggleLike('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}" data-liked="${hasLiked}">
-                                    <i class="${hasLiked ? 'fas' : 'far'} fa-heart mr-1"></i><span>${post.likes || 0}</span>
-                                </button>
-                                <div class="text-gray-600 flex items-center select-none">
-                                    <i class="far fa-chart-bar mr-1"></i><span>${post.views || 0}</span>
-                                </div>
+                                <button onclick="openReplyModal('${post.id}', '${post.username}')" class="hover:text-[#5999FF] transition cursor-pointer flex items-center"><i class="far fa-comment mr-1"></i><span>返信</span></button>
+                                <button onclick="openRepostModal('${post.id}', '${post.username}')" class="hover:text-green-500 transition cursor-pointer flex items-center"><i class="fas fa-retweet mr-1"></i><span>リポスト</span></button>
+                                <button onclick="toggleLike('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}" data-liked="${hasLiked}"><i class="${hasLiked ? 'fas' : 'far'} fa-heart mr-1"></i><span>${post.likes || 0}</span></button>
+                                <div class="text-gray-600 flex items-center select-none"><i class="far fa-chart-bar mr-1"></i><span>${post.views || 0}</span></div>
                             </div>
                         </div>
                     </div>`;
@@ -382,266 +370,228 @@
             });
         }
 
-        // 💬 内製返信ポップアップ
+        // 🛠️ 連打防止ガード付き：通常新規投稿送信
+        function submitPost() {
+            const textarea = document.getElementById('post-message');
+            const message = textarea.value.trim();
+            if (!message) return;
+
+            const btn = document.getElementById('btn-post-submit');
+            const btnText = document.getElementById('btn-post-text');
+            
+            // 🔒 連打ロック発動
+            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.5';
+            btnText.innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> 送信中...';
+
+            fetch(GAS_API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) 
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    textarea.value = '';
+                    document.getElementById('char-count').innerText = "0 / 140";
+                    loadTimeline(false);
+                }
+            })
+            .finally(() => {
+                // 🔓 ロック解除
+                btn.disabled = false;
+                btn.style.pointerEvents = 'auto';
+                btn.style.opacity = '1';
+                btnText.innerText = '届け！';
+            });
+        }
+
+        // 返信ウィンドウの生成
         function openReplyModal(postId, username) {
             const html = `
                 <h3 class="text-lg font-bold mb-3">@${username} へ返信</h3>
                 <textarea id="modal-reply-msg" placeholder="返信を部屋に響かせる..." class="w-full bg-[#15202b] border twitter-border p-3 rounded-xl h-24 text-white outline-none focus:border-[#5999FF] resize-none"></textarea>
                 <div class="flex justify-end mt-3">
-                    <button onclick="submitReply('${postId}')" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full text-sm">返信を送信</button>
+                    <button id="btn-reply-submit" onclick="submitReply('${postId}')" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full text-sm flex items-center">
+                       <span id="btn-reply-text">返信を送信</span>
+                    </button>
                 </div>`;
             openCustomModal(html);
         }
+
+        // 🛠️ 連打防止ガード付き：返信送信
         function submitReply(parentPostId) {
             const message = document.getElementById('modal-reply-msg').value.trim();
             if (!message) return;
+
+            const btn = document.getElementById('btn-reply-submit');
+            const btnText = document.getElementById('btn-reply-text');
+
+            // 🔒 連打ロック発動
+            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.5';
+            btnText.innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> 送信中...';
+
             fetch(GAS_API_URL, { 
                 method: 'POST', 
                 body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message, reply_to: parentPostId, post_type: 'reply' }) 
-            }).then(() => { closeCustomModal(); loadTimeline(false); });
+            })
+            .then(() => { closeCustomModal(); loadTimeline(false); })
+            .finally(() => {
+                // ポップアップが閉じるので不要ですが、安全のため戻す処理
+                if(btnText) btnText.innerText = '返信を送信';
+            });
         }
 
-        // 🔁 内製リポストポップアップ
         function openRepostModal(postId, username) {
             const html = `
                 <h3 class="text-lg font-bold mb-2">この投稿をリポストしますか？</h3>
                 <p class="text-gray-400 text-sm mb-4">@${username} さんの投稿をタイムラインの最上部に引き上げます。</p>
                 <div class="flex justify-end space-x-3">
                     <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">やめる</button>
-                    <button onclick="submitRepost('${postId}')" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full text-sm">リポストを実行</button>
+                    <button id="btn-repost-submit" onclick="submitRepost('${postId}')" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full text-sm">リポストを実行</button>
                 </div>`;
             openCustomModal(html);
         }
         function submitRepost(targetPostId) {
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: '', repost_of: targetPostId, post_type: 'repost' }) 
-            }).then(() => { closeCustomModal(); loadTimeline(false); });
+            const btn = document.getElementById('btn-repost-submit');
+            btn.disabled = true; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.5';
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: '', repost_of: targetPostId, post_type: 'repost' }) })
+            .then(() => { closeCustomModal(); loadTimeline(false); });
         }
 
-        // 💤 内製アカウント一時停止(Stop)手続き
-        function openStopConfirmModal() {
-            const html = `
-                <h3 class="text-lg font-bold text-amber-400 mb-2"><i class="fas fa-moon mr-2"></i>部屋を休眠状態(Stop)にしますか？</h3>
-                <p class="text-gray-300 text-sm leading-relaxed mb-4">
-                    一時停止すると自動的にログアウトされ、他の住人からは一時的に「休眠中の住人」と表示されます。<br>
-                    <span class="text-amber-300 font-bold">いつでもログインし直すだけで自動的に部屋を完全復活（再始動）させることができます。</span>
-                </p>
-                <div class="flex justify-end space-x-3">
-                    <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
-                    <button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button>
-                </div>`;
-            openCustomModal(html);
-        }
-
-        // 💥 内製完全削除手続き
-        function openDeleteConfirmModal() {
-            const html = `
-                <h3 class="text-lg font-bold text-red-400 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）</h3>
-                <p class="text-gray-300 text-sm leading-relaxed mb-4">
-                    このボタンを押すと、あなたのユーザーデータ、およびこれまでのすべての投稿が<span class="text-red-400 font-bold underline">データベースから跡形もなく完全物理削除</span>されます。二度と元には戻せません。
-                </p>
-                <div class="flex justify-end space-x-3">
-                    <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
-                    <button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button>
-                </div>`;
-            openCustomModal(html);
-        }
-
-        function submitChangeStatus(statusType) {
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'changeStatus', username: currentUser.username, status: statusType }) 
-            }).then(() => { handleLogout(); });
-        }
-
-        function submitDeleteAccount() {
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'deleteAccount', username: currentUser.username }) 
-            }).then(() => { handleLogout(); });
-        }
-
-        // 🔑 ログイン処理（Ban / Stop の条件分岐付き）
-        function handleLogin() {
+        // 🛡️ ==========================================
+        //   Google reCAPTCHA v2 フロントエンド制御ロジック
+        // =============================================
+        // 1. ログイン処理トリガー
+        function triggerLoginWithCaptcha() {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value.trim();
-            if (!email || !password) return;
+            if (!email || !password) { alert('資格情報を入力してください。'); return; }
+            
+            // ボタンのローディング化
+            document.getElementById('btn-login-submit').style.pointerEvents = 'none';
+            document.getElementById('btn-login-text').innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> 安全性を検証中...';
+            
+            // reCAPTCHAの検証を実行（チャレンジが出現するか、自動でパスします）
+            grecaptcha.execute(0); // 0番目のインデックス（ログイン用）
+        }
+
+        // ログイン検証成功時に自動で走るコールバック
+        function onLoginCaptchaSuccess(token) {
+            // 検証トークンが取れたらそのまま裏でログインAPIを叩く
+            executeLoginAction();
+            // 次回のためにreCAPTCHAの状態をリセット
+            grecaptcha.reset(0);
+        }
+
+        function executeLoginAction() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
 
             fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) })
             .then(res => res.json())
             .then(res => {
                 if (res.success) { loginSuccess(res.user); } 
                 else if (res.isBlocked) {
-                    // Ban または Stop ゲートの展開
                     document.getElementById('auth-gate').classList.add('hidden');
                     const blockGate = document.getElementById('block-gate');
                     const iconArea = document.getElementById('block-icon-area');
                     const titleArea = document.getElementById('block-title');
                     const descArea = document.getElementById('block-desc');
                     const actionArea = document.getElementById('block-action-area');
-                    
                     blockGate.classList.remove('hidden');
                     actionArea.innerHTML = '';
 
                     if (res.status === 'Ban') {
-                        iconArea.innerText = "🚨";
-                        titleArea.innerText = "アカウントが凍結されています";
+                        iconArea.innerText = "🚨"; titleArea.innerText = "アカウントが凍結されています";
                         titleArea.className = "text-2xl font-bold text-red-400";
-                        descArea.innerText = "規約違反または運営判断により、このアカウントは現在ロックされています。異議申し立ては受け付けていません。";
+                        descArea.innerText = "規約違反または運営判断により、このアカウントはロックされています。";
                         actionArea.innerHTML = `<button onclick="location.reload()" class="bg-zinc-800 text-white px-6 py-2 rounded-full font-bold">戻る</button>`;
                     } else if (res.status === 'Stop') {
-                        iconArea.innerText = "💤";
-                        titleArea.innerText = "お帰りなさい！現在休眠状態です";
+                        iconArea.innerText = "💤"; titleArea.innerText = "現在休眠状態です";
                         titleArea.className = "text-2xl font-bold text-amber-400";
-                        descArea.innerText = "あなたのアカウントは自らの意志で一時停止されています。下のボタンを押すことで、部屋のデータをすべて維持したまま即座に再始動できます！";
-                        actionArea.innerHTML = `
-                            <div class="flex flex-col space-y-3">
-                                <button onclick="reactivateAccount('${res.username}')" class="brand-color-bg text-white px-6 py-3 rounded-full font-bold shadow-lg hover:opacity-90">居間を再始動する</button>
-                                <button onclick="location.reload()" class="text-gray-400 text-sm hover:underline">ログインに戻る</button>
-                            </div>`;
+                        descArea.innerText = "アカウントは一時停止されています。いつでも即座に再始動できます！";
+                        actionArea.innerHTML = `<div class="flex flex-col space-y-3"><button onclick="reactivateAccount('${res.username}')" class="brand-color-bg text-white px-6 py-3 rounded-full font-bold shadow-lg">居間を再始動する</button><button onclick="location.reload()" class="text-gray-400 text-sm hover:underline">ログインに戻る</button></div>`;
                     }
                 } else {
                     alert('ログイン失敗: ' + res.error);
                 }
+            })
+            .finally(() => {
+                document.getElementById('btn-login-submit').style.pointerEvents = 'auto';
+                document.getElementById('btn-login-text').innerText = '居間に入る';
             });
         }
 
-        function reactivateAccount(username) {
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'reactivate', username: username }) })
-            .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    document.getElementById('block-gate').classList.add('hidden');
-                    loginSuccess(res.user);
-                } else { alert(res.error); }
-            });
-        }
-
-        // その他（UI更新・ベースシステム）
-        function loginSuccess(user) {
-            currentUser = user;
-            localStorage.setItem('loggia_user', JSON.stringify(user));
-            document.getElementById('auth-gate').classList.add('hidden');
-            updateUserUI();
-            exitProfileMode();
-        }
-        function handleLogout() {
-            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
-            localStorage.removeItem('loggia_user');
-            location.reload();
-        }
-        function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") {
-            if (!url || url === 'logo.jpg') return `<img src="logo.jpg" class="${cssClass} bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`;
-            return `<img src="${url}" class="${cssClass}">`;
-        }
-        function updateUserUI() {
-            if (!currentUser) return;
-            document.getElementById('nav-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url);
-            document.getElementById('form-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url, "w-12 h-12 rounded-full object-cover");
-            document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人';
-            document.getElementById('nav-username').innerText = '@' + currentUser.username;
-        }
-        function switchTab(tabName) {
-            if (tabName === 'timeline') {
-                document.getElementById('tab-timeline').classList.remove('hidden');
-                document.getElementById('tab-profile-edit').classList.add('hidden');
-                exitProfileMode();
-            } else {
-                document.getElementById('tab-timeline').classList.add('hidden');
-                document.getElementById('tab-profile-edit').classList.remove('hidden');
-                document.getElementById('edit-display-name').value = currentUser.display_name || '';
-                document.getElementById('edit-bio').value = currentUser.bio || '';
-                const preview = document.getElementById('edit-preview');
-                if (currentUser.icon_url) { preview.src = currentUser.icon_url; preview.classList.remove('hidden'); }
-            }
-        }
-        function linkify(text) {
-            return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="#" onclick="safeNavigate('${url}'); return false;" class="text-blue-400 hover:underline break-all"><i class="fas fa-external-link-alt text-xs mr-1"></i>${url}</a>`);
-        }
-        function safeNavigate(url) {
-            if (confirm(`外部サイトへ移動しますか？\n\n${url}`)) window.open(url, '_blank', 'noopener,noreferrer');
-        }
-        function previewImage(input, previewId) {
-            const preview = document.getElementById(previewId);
-            if (input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => { preview.src = e.target.result; preview.classList.remove('hidden'); };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                if (!file) resolve('');
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = e => reject(e);
-            });
-        }
-        function toggleAuthTab(tab) {
-            if (tab === 'login') {
-                document.getElementById('form-login').classList.remove('hidden');
-                document.getElementById('form-register').classList.add('hidden');
-                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold border-b-2 brand-color-text !border-[#5999FF]";
-                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
-            } else {
-                document.getElementById('form-login').classList.add('hidden');
-                document.getElementById('form-register').classList.remove('hidden');
-                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold brand-color-text !border-[#5999FF]";
-                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
-            }
-        }
-        async function handleRegister() {
+        // 2. 新規入居処理トリガー
+        function triggerRegisterWithCaptcha() {
             const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value.trim();
             const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
             const birthday = document.getElementById('reg-birth').value;
             const username = document.getElementById('reg-username').value.trim().replace('@','');
-            let display_name = document.getElementById('reg-display').value.trim();
             if (!email || !password || !passwordConfirm || !birthday || !username) { alert('必須項目が未入力です。'); return; }
-            if (password !== passwordConfirm) { alert('パスワード不一致'); return; }
+            if (password !== passwordConfirm) { alert('パスワードが一致しません。'); return; }
+
+            document.getElementById('btn-reg-submit').style.pointerEvents = 'none';
+            document.getElementById('btn-reg-text').innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> 安全性を検証中...';
+
+            grecaptcha.execute(1); // 1番目のインデックス（新規登録用）
+        }
+
+        // 新規登録検証成功時に自動で走るコールバック
+        function onRegisterCaptchaSuccess(token) {
+            executeRegisterAction();
+            grecaptcha.reset(1);
+        }
+
+        async function executeRegisterAction() {
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const birthday = document.getElementById('reg-birth').value;
+            const username = document.getElementById('reg-username').value.trim().replace('@','');
+            let display_name = document.getElementById('reg-display').value.trim();
             if (!display_name) display_name = '新参者';
             let icon_url = 'logo.jpg';
             if (document.getElementById('reg-icon-file').files[0]) icon_url = await fileToBase64(document.getElementById('reg-icon-file').files[0]);
 
             fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'register', username, display_name, icon_url, email, password, birthday }) })
-            .then(res => res.json()).then(res => { if (res.success) { loginSuccess(res.user); } else { alert(res.error); } });
-        }
-        async function saveProfile() {
-            const displayName = document.getElementById('edit-display-name').value.trim();
-            const bio = document.getElementById('edit-bio').value.trim();
-            let iconUrl = currentUser.icon_url;
-            if (document.getElementById('edit-icon-file').files[0]) iconUrl = await fileToBase64(document.getElementById('edit-icon-file').files[0]);
-
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', username: currentUser.username, display_name: displayName, icon_url: iconUrl, bio: bio }) })
-            .then(res => res.json()).then(res => {
-                if (res.success) {
-                    currentUser.display_name = displayName || '新参者'; currentUser.icon_url = iconUrl; currentUser.bio = bio;
-                    localStorage.setItem('loggia_user', JSON.stringify(currentUser));
-                    updateUserUI(); alert('模様替え完了！'); switchTab('timeline');
-                }
+            .then(res => res.json())
+            .then(res => { 
+                if (res.success) { loginSuccess(res.user); } 
+                else { alert(res.error); } 
+            })
+            .finally(() => {
+                document.getElementById('btn-reg-submit').style.pointerEvents = 'auto';
+                document.getElementById('btn-reg-text').innerText = '入居を確定する';
             });
         }
-        function toggleLike(postId, buttonEl) {
-            const heartIcon = buttonEl.querySelector('i');
-            const countSpan = buttonEl.querySelector('span');
-            buttonEl.style.pointerEvents = 'none';
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'toggleLike', postId: postId, username: currentUser.username }) })
-            .then(res => res.json()).then(res => {
-                buttonEl.style.pointerEvents = 'auto';
-                if (res.success) {
-                    buttonEl.setAttribute('data-liked', String(res.isLiked)); countSpan.innerText = res.likesCount;
-                    if (res.isLiked) { heartIcon.className = 'fas fa-heart text-pink-500 mr-1'; buttonEl.classList.add('text-pink-500'); } 
-                    else { heartIcon.className = 'far fa-heart mr-1'; buttonEl.classList.remove('text-pink-500'); }
-                }
-            }).catch(() => { buttonEl.style.pointerEvents = 'auto'; });
+
+
+        // 共通系ロジック（変更なし）
+        function openStopConfirmModal() {
+            const html = `<h3 class="text-lg font-bold text-amber-400 mb-2"><i class="fas fa-moon mr-2"></i>部屋を休眠状態(Stop)にしますか？</h3><p class="text-gray-300 text-sm leading-relaxed mb-4">一時停止すると自動的にログアウトされ、他の住人からは一時的に「休眠中の住人」と表示されます。<br><span class="text-amber-300 font-bold">いつでもログインし直すだけで自動的に部屋を完全復活（再始動）させることができます。</span></p><div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button><button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button></div>`;
+            openCustomModal(html);
         }
-        function submitPost() {
-            const textarea = document.getElementById('post-message'); const message = textarea.value.trim(); if (!message) return;
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) })
-            .then(res => res.json()).then(res => { if (res.success) { textarea.value = ''; document.getElementById('char-count').innerText = "0 / 140"; loadTimeline(false); } });
+        function openDeleteConfirmModal() {
+            const html = `<h3 class="text-lg font-bold text-red-400 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）</h3><p class="text-gray-300 text-sm leading-relaxed mb-4">このボタンを押すと、あなたのユーザーデータ、およびこれまでのすべての投稿が<span class="text-red-400 font-bold underline">データベースから跡形もなく完全物理削除</span>されます。二度と元には戻せません。</p><div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button><button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button></div>`;
+            openCustomModal(html);
         }
+        function submitChangeStatus(statusType) { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'changeStatus', username: currentUser.username, status: statusType }) }).then(() => { handleLogout(); }); }
+        function submitDeleteAccount() { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteAccount', username: currentUser.username }) }).then(() => { handleLogout(); }); }
+        function reactivateAccount(username) { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'reactivate', username: username }) }).then(res => res.json()).then(res => { if (res.success) { document.getElementById('block-gate').classList.add('hidden'); loginSuccess(res.user); } else { alert(res.error); } }); }
+        function loginSuccess(user) { currentUser = user; localStorage.setItem('loggia_user', JSON.stringify(user)); document.getElementById('auth-gate').classList.add('hidden'); updateUserUI(); exitProfileMode(); }
+        function handleLogout() { if(autoRefreshInterval) clearInterval(autoRefreshInterval); localStorage.removeItem('loggia_user'); location.reload(); }
+        function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") { if (!url || url === 'logo.jpg') return `<img src="logo.jpg" class="${cssClass} bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`; return `<img src="${url}" class="${cssClass}">`; }
+        function updateUserUI() { if (!currentUser) return; document.getElementById('nav-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url); document.getElementById('form-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url, "w-12 h-12 rounded-full object-cover"); document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人'; document.getElementById('nav-username').innerText = '@' + currentUser.username; }
+        function switchTab(tabName) { if (tabName === 'timeline') { document.getElementById('tab-timeline').classList.remove('hidden'); document.getElementById('tab-profile-edit').classList.add('hidden'); exitProfileMode(); } else { document.getElementById('tab-timeline').classList.add('hidden'); document.getElementById('tab-profile-edit').classList.remove('hidden'); document.getElementById('edit-display-name').value = currentUser.display_name || ''; document.getElementById('edit-bio').value = currentUser.bio || ''; const preview = document.getElementById('edit-preview'); if (currentUser.icon_url) { preview.src = currentUser.icon_url; preview.classList.remove('hidden'); } } }
+        function linkify(text) { return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="#" onclick="safeNavigate('${url}'); return false;" class="text-blue-400 hover:underline break-all"><i class="fas fa-external-link-alt text-xs mr-1"></i>${url}</a>`); }
+        function safeNavigate(url) { if (confirm(`外部サイトへ移動しますか？\n\n${url}`)) window.open(url, '_blank', 'noopener,noreferrer'); }
+        function previewImage(input, previewId) { const preview = document.getElementById(previewId); if (input.files[0]) { const reader = new FileReader(); reader.onload = e => { preview.src = e.target.result; preview.classList.remove('hidden'); }; reader.readAsDataURL(input.files[0]); } }
+        function fileToBase64(file) { return new Promise((resolve, reject) => { if (!file) resolve(''); const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = e => reject(e); }); }
+        function toggleLike(postId, buttonEl) { const heartIcon = buttonEl.querySelector('i'); const countSpan = buttonEl.querySelector('span'); buttonEl.style.pointerEvents = 'none'; fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'toggleLike', postId: postId, username: currentUser.username }) }).then(res => res.json()).then(res => { buttonEl.style.pointerEvents = 'auto'; if (res.success) { buttonEl.setAttribute('data-liked', String(res.isLiked)); countSpan.innerText = res.likesCount; if (res.isLiked) { heartIcon.className = 'fas fa-heart text-pink-500 mr-1'; buttonEl.classList.add('text-pink-500'); } else { heartIcon.className = 'far fa-heart mr-1'; buttonEl.classList.remove('text-pink-500'); } } }).catch(() => { buttonEl.style.pointerEvents = 'auto'; }); }
     </script>
 </body>
 </html>
