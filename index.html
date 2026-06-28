@@ -27,7 +27,7 @@
             <div class="text-6xl animate-bounce">🚧</div>
             <h1 class="text-3xl font-extrabold tracking-tight text-amber-400">ただいま模様替え中...</h1>
             <p class="text-gray-400 text-sm leading-relaxed">
-                Loggiaは現在、住み心地を良くするための定期メンテナンス（機能追加・大掃除）を行っています。<br>
+                Loggiaは現在、住み心地を良くするための定期メンテナンスを行っています。<br>
                 完了するまで、ソファでお茶でも飲んで少々お待ちください。
             </p>
             <div class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20">
@@ -226,7 +226,7 @@
                         <i class="fas fa-toggle-on mr-2 text-amber-400"></i>一般住人へのメンテナンス画面表示
                     </h3>
                     <p class="text-gray-400 text-xs leading-relaxed">
-                        有効にすると、管理者（Admin）以外の一般ユーザーがアクセスした際に強制的に専用の「模様替え中画面」が表示され、タイムラインの閲覧や書き込みを遮断します。管理者はそのまま通過して開発テストを継続できます。
+                        有効にすると、管理者以外の一般ユーザーがアクセスした際に強制的に専用の「模様替え中画面」が表示され、タイムラインの閲覧や書き込みを遮断します。
                     </p>
                     
                     <div class="flex items-center space-x-4 pt-2">
@@ -237,10 +237,6 @@
                             設定を切り替える
                         </button>
                     </div>
-                </div>
-
-                <div class="bg-[#192734]/20 p-4 rounded-xl border border-dashed twitter-border text-xs text-gray-500">
-                    ※ 状態はリアルタイムでシステムスプレッドシートの「System」シートと同期されています。
                 </div>
             </section>
         </main>
@@ -268,7 +264,6 @@
             checkSystemMaintenance();
         };
 
-        // 🚧 システム全体のメンテナンス状態をGASに問い合わせる
         function checkSystemMaintenance() {
             const cached = localStorage.getItem('loggia_user');
             let userParam = "";
@@ -345,7 +340,6 @@
             }
         }
 
-        // 👑 管理者がメンテ状態を切り替えるコマンド
         function toggleMaintenanceMode() {
             if (!currentUser || currentUser.role !== 'Admin') return;
             const targetState = currentMaintenanceState ? "OFF" : "ON";
@@ -655,12 +649,53 @@
             });
         }
 
+        function saveProfile() {
+            const dName = document.getElementById('edit-display-name').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+            if (!dName) { alert('名前は必須です'); return; }
+
+            const fileInput = document.getElementById('edit-icon-file');
+            const file = fileInput.files[0];
+
+            const sendData = async () => {
+                let iconBase64 = currentUser.icon_url;
+                if (file) {
+                    iconBase64 = await fileToBase64(file);
+                }
+                fetch(GAS_API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'updateProfile',
+                        username: currentUser.username,
+                        display_name: dName,
+                        bio: bio,
+                        icon_url: iconBase64
+                    })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        currentUser.display_name = dName;
+                        currentUser.bio = bio;
+                        currentUser.icon_url = iconBase64;
+                        localStorage.setItem('loggia_user', JSON.stringify(currentUser));
+                        updateUserUI();
+                        alert('模様替えを保存しました！');
+                        switchTab('timeline');
+                    } else {
+                        alert('エラー: ' + res.error);
+                    }
+                });
+            };
+            sendData();
+        }
+
         function openStopConfirmModal() {
-            const html = `<h3 class="text-lg font-bold text-amber-400 mb-2"><i class="fas fa-moon mr-2"></i>部屋を休眠状態(Stop)にしますか？</h3><p class="text-gray-300 text-sm leading-relaxed mb-4">一時停止すると自動的にログアウトされ、他の住人からは一時的に「休眠中の住人」と表示されます。<br><span class="text-amber-300 font-bold">いつでもログインし直すだけで自動的に部屋を完全復活（再始動）させることができます。</span></p><div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button><button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button></div>`;
+            const html = `<h3 class="text-lg font-bold text-amber-400 mb-2"><i class="fas fa-moon mr-2"></i>部屋を休眠状態(Stop)にしますか？</h3><p class="text-gray-300 text-sm leading-relaxed mb-4">一時停止すると自動的にログアウトされ、他の住人からは一時的に「休眠中の住人」と表示されます。<br><span class="text-amber-300 font-bold">いつでもログインし直すだけで自動的に部屋を完全復活させることができます。</span></p><div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button><button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button></div>`;
             openCustomModal(html);
         }
         function openDeleteConfirmModal() {
-            const html = `<h3 class="text-lg font-bold text-red-400 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）</h3><p class="text-gray-300 text-sm leading-relaxed mb-4">このボタンを押すと、あなたのユーザーデータ、およびこれまでのすべての投稿が<span class="text-red-400 font-bold underline">データベースから跡形もなく完全物理削除</span>されます。二度と元には戻せません。</p><div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button><button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button></div>`;
+            const html = `<h3 class="text-lg font-bold text-red-400 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）</h3><p class="text-gray-300 text-sm leading-relaxed mb-4">このボタンを押すと、あなたのユーザーデータ、およびこれまでのすべての投稿がデータベースから跡形もなく完全物理削除されます。二度と元には戻せません。</p><div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button><button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button></div>`;
             openCustomModal(html);
         }
         function submitChangeStatus(statusType) { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'changeStatus', username: currentUser.username, status: statusType }) }).then(() => { handleLogout(); }); }
@@ -675,7 +710,14 @@
         }
         
         function handleLogout() { if(autoRefreshInterval) clearInterval(autoRefreshInterval); localStorage.removeItem('loggia_user'); location.reload(); }
-        function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") { if (!url || url === 'logo.jpg') return `<img src="logo.jpg" class="${cssClass} bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`; return `<img src="${url}" class="${cssClass}">`; }
+        
+        // 🔒 404クラッシュ防止パッチ適用の画像生成ヘルパー
+        function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") { 
+            if (!url || url === 'logo.jpg' || url.trim() === '' || (!url.startsWith('data:image') && !url.startsWith('http') && !url.startsWith('.'))) {
+                return `<img src="logo.jpg" class="${cssClass} bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`; 
+            }
+            return `<img src="${url}" class="${cssClass}" onerror="this.src='logo.jpg'">`; 
+        }
         
         function updateUserUI() { 
             if (!currentUser) return; 
@@ -684,7 +726,6 @@
             document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人'; 
             document.getElementById('nav-username').innerText = '@' + currentUser.username; 
             
-            // 👑 PC/スマホ双方で管理者権限（Admin）をチェックしてボタンを表示
             if (currentUser.role === 'Admin') {
                 document.getElementById('nav-admin-btn').classList.remove('hidden');
                 document.getElementById('nav-admin-btn-mobile').classList.remove('hidden');
