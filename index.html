@@ -69,7 +69,7 @@
                 </button>
             </div>
 
-            <div id="form-register" class="space-y-4 hidden max-h-[60vh] overflow-y-auto pr-1">
+             <div id="form-register" class="space-y-4 hidden max-h-[60vh] overflow-y-auto pr-1">
                 <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
                 <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
                 <input type="date" id="reg-birth" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none text-gray-400">
@@ -561,22 +561,40 @@
             });
         }
 
-        // 🤖 reCAPTCHAトークンチェック処理を完全復活
+         // 🤖 【変える部分】住人登録処理（確認用パスワードチェック＆reCAPTCHA動作不良改善版）
         async function executeRegisterAction() {
             const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value.trim();
+            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim(); // 追加
             const birthday = document.getElementById('reg-birth').value;
             const username = document.getElementById('reg-username').value.trim().replace('@','');
             let display_name = document.getElementById('reg-display').value.trim() || '新参者';
             let icon_url = 'logo.jpg';
 
-            // reCAPTCHAのチェックが入っているか検証
-            const token = grecaptcha.getResponse();
-            if (!token) {
-                alert('あなたがロボットではないことを証明するために、チェックボックスをオンにしてください。');
+            // 1. パスワードの入力・一致チェック
+            if (!password || !passwordConfirm) {
+                alert('パスワードと確認用パスワードの両方を入力してください。');
+                return;
+            }
+            if (password !== passwordConfirm) {
+                alert('パスワードと確認用パスワードが一致しません。もう一度ご確認ください。');
                 return;
             }
 
+            // 2. reCAPTCHAのチェックボックス検証
+            let token = "";
+            try {
+                token = grecaptcha.getResponse();
+            } catch (e) {
+                console.error("reCAPTCHAがまだ読み込まれていないか、エラーが発生しています", e);
+            }
+
+            if (!token) {
+                alert('あなたがロボットではないことを証明するために、reCAPTCHAのチェックボックスをオンにしてください。');
+                return;
+            }
+
+            // 3. GASへデータを送信
             fetch(GAS_API_URL, { 
                 method: 'POST', 
                 body: JSON.stringify({ 
@@ -587,7 +605,7 @@
                     email, 
                     password, 
                     birthday,
-                    recaptchaToken: token // トークンをGASへ送信
+                    recaptchaToken: token 
                 }) 
             })
             .then(res => res.json())
@@ -596,8 +614,12 @@
                     loginSuccess(res.user); 
                 } else { 
                     alert(res.error); 
-                    grecaptcha.reset(); // エラーが起きたらreCAPTCHAをリセット
+                    if (typeof grecaptcha !== 'undefined') grecaptcha.reset(); // エラー時はreCAPTCHAをリセット
                 } 
+            })
+            .catch(err => {
+                alert('通信エラーが発生しました。時間を置いて再度お試しください。');
+                if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
             });
         }
 
