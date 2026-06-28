@@ -4,85 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loggia - インターネットの居間と今</title>
-    <link rel="icon" href="logo.jpg" type="image/jpeg">
+    <link class="w-full" rel="icon" href="logo.jpg" type="image/jpeg">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
-    <style>
-        body { background-color: #15202b; color: #fff; }
-        .twitter-border { border-color: #38444d; }
-        .brand-color-bg { background-color: #5999FF; }
-        .brand-color-text { color: #5999FF; }
-        .twitter-hover:hover { background-color: #192734; }
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #192734; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #38444d; border-radius: 3px; }
-    </style>
 </head>
-<body class="font-sans antialiased overflow-x-hidden">
+<body class="font-sans antialiased overflow-x-hidden bg-[#15202b] text-white">
+
+    <div id="maintenance-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden overflow-y-auto">
+        <div class="text-center space-y-6 p-8 max-w-md mx-4 my-auto">
+            <div class="text-6xl animate-bounce">🚧</div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-amber-400">ただいま模様替え中...</h1>
+            <p class="text-gray-400 text-sm leading-relaxed">
+                Loggiaは現在、住み心地を良くするための定期メンテナンスを行っています。<br>
+                完了するまで、ソファでお茶でも飲んで少々お待ちください。
+            </p>
+            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <i class="fas fa-tools mr-1.5"></i> 管理者が作業中です
+            </div>
+            <div class="pt-4 flex flex-col items-center gap-3">
+                <button onclick="location.reload()" class="w-full bg-zinc-800 text-gray-300 font-bold px-5 py-2.5 rounded-full text-xs hover:text-white transition cursor-pointer">
+                    <i class="fas fa-sync-alt mr-1"></i> ドアをノックしてみる
+                </button>
+                <button onclick="toggleAdminEmergencyLogin()" class="text-zinc-500 text-xs hover:text-amber-400 transition underline cursor-pointer">
+                    統括管理室の鍵を開ける（管理者ログイン）
+                </button>
+            </div>
+
+            <div id="admin-emergency-box" class="hidden mt-6 p-4 bg-[#192734] border border-[#38444d] rounded-2xl text-left space-y-3">
+                <div class="text-xs font-bold text-amber-400"><i class="fas fa-key mr-1"></i> 管理者認証</div>
+                <input type="email" id="maint-admin-email" placeholder="管理者メールアドレス" class="w-full bg-[#15202b] border border-[#38444d] p-2 text-sm rounded outline-none text-white">
+                <input type="password" id="maint-admin-password" placeholder="パスワード" class="w-full bg-[#15202b] border border-[#38444d] p-2 text-sm rounded outline-none text-white">
+                <button onclick="executeAdminEmergencyLogin()" class="w-full bg-amber-500 text-black font-bold text-xs py-2 rounded-full hover:bg-amber-400 transition cursor-pointer">
+                    認証して入室
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div id="modal-container" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
-        <div class="bg-[#192734] border twitter-border p-6 rounded-2xl w-full max-w-lg shadow-2xl relative mx-4">
-            <button onclick="closeCustomModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg"><i class="fas fa-times"></i></button>
+        <div class="bg-[#192734] border border-[#38444d] p-6 rounded-2xl w-full max-w-lg shadow-2xl relative mx-4">
+            <button onclick="closeCustomModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg cursor-pointer"><i class="fas fa-times"></i></button>
             <div id="modal-content-area"></div>
         </div>
     </div>
 
-    <div id="block-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden">
-        <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md text-center space-y-6 shadow-2xl mx-4">
-            <div id="block-icon-area" class="text-5xl"></div>
-            <h2 id="block-title" class="text-2xl font-bold"></h2>
-            <p id="block-desc" class="text-gray-400 text-sm"></p>
-            <div id="block-action-area" class="pt-4"></div>
-        </div>
-    </div>
-
     <div id="auth-gate" class="fixed inset-0 bg-[#15202b] z-40 flex items-center justify-center hidden">
-        <div class="bg-[#192734] border twitter-border p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl mx-4">
+        <div class="bg-[#192734] border border-[#38444d] p-8 rounded-2xl w-full max-w-md space-y-6 shadow-2xl mx-4">
             <div class="flex flex-col items-center space-y-3">
-                <img src="logo.jpg" alt="Loggia Logo" class="w-16 h-16 object-cover shadow bg-[#000000]">
+                <img src="logo.jpg" alt="Loggia Logo" class="w-16 h-16 object-cover shadow bg-black">
                 <div class="text-2xl font-light tracking-widest text-gray-200">Loggia</div>
             </div>
             
-            <div class="flex border-b twitter-border text-center">
-                <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 brand-color-text !border-[#5999FF]">ログイン</button>
-                <button onclick="toggleAuthTab('register')" id="btn-tab-register" class="w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent">入居申し込み</button>
+            <div class="flex border-b border-[#38444d] text-center">
+                <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="w-1/2 pb-2 font-bold border-b-2 text-[#5999FF] border-[#5999FF] cursor-pointer">ログイン</button>
+                <button onclick="toggleAuthTab('register')" id="btn-tab-register" class="w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent cursor-pointer">入居申し込み</button>
             </div>
 
             <div id="form-login" class="space-y-4">
-                <input type="email" id="login-email" placeholder="メールアドレス" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#5999FF]">
-                <input type="password" id="login-password" placeholder="パスワード" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none focus:border-[#5999FF]">
-                
-                <div id="recaptcha-login" class="g-recaptcha" data-sitekey="6Lc2tzktAAAAAP_Gzbq8XnwNnApovLshBlubNJC_" data-callback="onLoginCaptchaSuccess" data-size="invisible"></div>
-                
-                <button id="btn-login-submit" onclick="triggerLoginWithCaptcha()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
-                    <span id="btn-login-text">居間に入る</span>
+                <input type="email" id="login-email" placeholder="メールアドレス" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none focus:border-[#5999FF]">
+                <input type="password" id="login-password" placeholder="パスワード" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none focus:border-[#5999FF]">
+                <button id="btn-login-submit" onclick="executeLoginAction()" class="w-full bg-[#5999FF] text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
+                    <span>居間に入る</span>
                 </button>
             </div>
 
-            <div id="form-register" class="space-y-4 hidden h-[320px] overflow-y-auto pr-1 custom-scroll">
-                <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                <input type="password" id="reg-password-confirm" placeholder="パスワードの確認 (必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                <div>
-                    <label class="text-xs text-gray-400 block mb-1">誕生日 (必須)</label>
-                    <input type="date" id="reg-birth" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none text-gray-400">
-                </div>
-                <input type="text" id="reg-username" placeholder="住人ID (英数字・必須)" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                <input type="text" id="reg-display" placeholder="表札の名前" class="w-full bg-[#15202b] border twitter-border p-3 rounded outline-none">
-                
-                <div class="bg-[#15202b] p-3 rounded border twitter-border space-y-3">
-                    <label class="text-xs text-gray-400 block">アイコン画像（任意）</label>
+            <div id="form-register" class="space-y-4 hidden max-h-[60vh] overflow-y-auto pr-1">
+                <input type="email" id="reg-email" placeholder="メールアドレス (必須)" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
+                <input type="password" id="reg-password" placeholder="パスワード (必須)" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
+                <input type="date" id="reg-birth" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none text-gray-400">
+                <input type="text" id="reg-username" placeholder="住人ID (英数字・必須)" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
+                <input type="text" id="reg-display" placeholder="表札の名前" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
+                <div class="bg-[#15202b] p-3 rounded border border-[#38444d] space-y-3">
                     <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400">
                     <img id="reg-preview" src="logo.jpg" class="w-12 h-12 rounded-full object-cover hidden">
                 </div>
 
-                <div id="recaptcha-reg" class="g-recaptcha" data-sitekey="6Lc2tzktAAAAAP_Gzbq8XnwNnApovLshBlubNJC_" data-callback="onRegisterCaptchaSuccess" data-size="invisible"></div>
+                <div class="flex justify-center py-2">
+                    <div class="g-recaptcha" data-sitekey="6Lc2tzktAAAAAP_Gzbq8XnwNnApovLshBlubNJC_" data-theme="dark"></div>
+                </div>
 
-                <button id="btn-reg-submit" onclick="triggerRegisterWithCaptcha()" class="w-full brand-color-bg text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
-                    <span id="btn-reg-text">入居を確定する</span>
+                <button id="btn-reg-submit" onclick="executeRegisterAction()" class="w-full bg-[#5999FF] text-white font-bold py-3 rounded-full hover:opacity-90 cursor-pointer flex justify-center items-center">
+                    <span>入居を確定する</span>
                 </button>
             </div>
         </div>
@@ -90,21 +93,26 @@
 
     <div class="w-full min-h-screen grid grid-cols-1 md:grid-cols-[260px_1fr] lg:grid-cols-[290px_768px_1fr] gap-0">
         
-        <header class="border-r twitter-border p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex z-30 bg-[#15202b]">
+        <header class="border-r border-[#38444d] p-4 flex flex-col justify-between h-screen sticky top-0 hidden md:flex z-30 bg-[#15202b]">
             <div class="space-y-6 text-xl font-bold">
-                <div onclick="switchTab('timeline')" class="flex items-center space-x-3 p-2 cursor-pointer">
-                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover shadow bg-[#000000]">
+                <div onclick="navigateToPage('timeline')" class="flex items-center space-x-3 p-2 cursor-pointer">
+                    <img src="logo.jpg" alt="Loggia" class="w-10 h-10 object-cover shadow bg-black">
                     <div class="text-lg font-light tracking-widest text-gray-300">Loggia</div>
                 </div>
                 <nav class="space-y-2 text-[16px]">
-                    <button onclick="switchTab('timeline')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-couch w-8 text-center mr-2 text-gray-400"></i>居間</button>
-                    <button onclick="openMyRoomProfile()" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-user w-8 text-center mr-2 text-gray-400"></i>自分の部屋</button>
-                    <button onclick="switchTab('profile-edit')" class="w-full text-left p-3 rounded-full twitter-hover cursor-pointer flex items-center"><i class="fas fa-door-open w-8 text-center mr-2 text-gray-400"></i>模様替え・設定</button>
-                    <button onclick="handleLogout()" class="w-full text-left p-3 rounded-full text-red-400/80 twitter-hover cursor-pointer flex items-center"><i class="fas fa-sign-out-alt w-8 text-center mr-2"></i>退出</button>
+                    <button onclick="navigateToPage('timeline')" class="w-full text-left p-3 rounded-full hover:bg-[#192734] cursor-pointer flex items-center"><i class="fas fa-couch w-8 text-center mr-2 text-gray-400"></i>居間</button>
+                    <button onclick="navigateToPage('profile', currentUser?.username)" class="w-full text-left p-3 rounded-full hover:bg-[#192734] cursor-pointer flex items-center"><i class="fas fa-user w-8 text-center mr-2 text-gray-400"></i>自分の部屋</button>
+                    <button onclick="navigateToPage('settings')" class="w-full text-left p-3 rounded-full hover:bg-[#192734] cursor-pointer flex items-center"><i class="fas fa-door-open w-8 text-center mr-2 text-gray-400"></i>模様替え・設定</button>
+                    
+                    <button id="nav-admin-btn" onclick="navigateToPage('admin')" class="w-full text-left p-3 rounded-full text-amber-400 hover:bg-[#192734] cursor-pointer flex items-center hidden">
+                        <i class="fas fa-tools w-8 text-center mr-2 text-amber-400"></i>管理室
+                    </button>
+
+                    <button onclick="handleLogout()" class="w-full text-left p-3 rounded-full text-red-400/80 hover:bg-[#192734] cursor-pointer flex items-center"><i class="fas fa-sign-out-alt w-8 text-center mr-2"></i>退出</button>
                 </nav>
             </div>
             
-            <div class="flex items-center space-x-2 p-2 border mt-auto twitter-border rounded-full bg-[#192734]/20 text-sm">
+            <div class="flex items-center space-x-2 p-2 border border-[#38444d] mt-auto rounded-full bg-[#192734]/20 text-sm">
                 <div id="nav-avatar-container" class="w-8 h-8 flex-shrink-0"></div>
                 <div class="overflow-hidden">
                     <div id="nav-display-name" class="font-bold truncate">ゲスト</div>
@@ -113,20 +121,19 @@
             </div>
         </header>
 
-        <main class="border-r border-l md:border-l-0 twitter-border min-h-screen pb-20 md:pb-0 bg-[#15202b] w-full">
-            
-            <section id="tab-timeline" class="block">
-                <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b twitter-border p-4 font-bold text-xl flex justify-between items-center z-10">
-                    <div class="flex items-center space-x-3">
-                        <button id="profile-back-btn" onclick="exitProfileMode()" class="mr-2 text-gray-400 hover:text-white hidden"><i class="fas fa-arrow-left"></i></button>
-                        <span id="timeline-header-title">Loggia の「今」</span>
-                        <span id="sync-status" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20 animate-pulse">
-                          <span id="sync-dot" class="w-1.5 h-1.5 mr-1.5 bg-green-400 rounded-full"></span><span id="sync-text">自動同期中</span>
-                        </span>
-                    </div>
+        <main class="border-r border-[#38444d] min-h-screen pb-20 md:pb-0 bg-[#15202b] w-full">
+            <div class="sticky top-0 bg-[#15202b]/80 backdrop-blur border-b border-[#38444d] p-4 font-bold text-xl flex justify-between items-center z-10">
+                <div class="flex items-center space-x-3">
+                    <button id="global-back-btn" onclick="navigateToPage('timeline')" class="mr-2 text-gray-400 hover:text-white hidden cursor-pointer"><i class="fas fa-arrow-left"></i></button>
+                    <span id="feed-header-title">Loggia の「今」</span>
+                    <span id="sync-status" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
+                      <span id="sync-dot" class="w-1.5 h-1.5 mr-1.5 bg-green-400 rounded-full"></span><span id="sync-text">自動同期中</span>
+                    </span>
                 </div>
+            </div>
 
-                <div id="profile-card-area" class="border-b twitter-border bg-[#192734]/20 hidden p-6 space-y-4">
+            <section id="view-timeline" class="block">
+                <div id="profile-card-area" class="border-b border-[#38444d] bg-[#192734]/20 hidden p-6 space-y-4">
                     <div class="flex items-start justify-between">
                         <div id="prof-card-avatar" class="w-20 h-20"></div>
                         <span id="prof-card-badge" class="px-3 py-1 rounded-full text-xs font-bold"></span>
@@ -136,71 +143,69 @@
                         <p id="prof-card-username" class="text-gray-400 text-sm"></p>
                     </div>
                     <p id="prof-card-bio" class="text-gray-200 text-base whitespace-pre-wrap"></p>
-                    <div class="text-gray-400 text-sm font-bold border-t twitter-border pt-3"><i class="fas fa-couch mr-2"></i>この部屋の主のつぶやき</div>
                 </div>
                 
-                <div id="timeline-post-box" class="border-b twitter-border p-4 flex space-x-3 bg-[#192734]/10">
+                <div id="timeline-post-box" class="border-b border-[#38444d] p-4 flex space-x-3 bg-[#192734]/10">
                     <div id="form-avatar-container" class="w-12 h-12 flex-shrink-0"></div>
                     <div class="flex-1">
                         <textarea id="post-message" placeholder="いまどうしてる？" class="w-full bg-transparent text-xl outline-none resize-none h-24 pt-1" maxlength="140"></textarea>
-                        <div class="flex justify-between items-center pt-2 border-t twitter-border mt-2">
+                        <div class="flex justify-between items-center pt-2 border-t border-[#38444d] mt-2">
                             <span class="text-sm text-gray-500" id="char-count">0 / 140</span>
-                            <button id="btn-post-submit" onclick="submitPost()" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90 flex items-center">
-                                <span id="btn-post-text">届け！</span>
+                            <button id="btn-post-submit" onclick="submitPost()" class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90 flex items-center">
+                                <span>届け！</span>
                             </button>
                         </div>
                     </div>
                 </div>
                 
                 <div id="timeline-loading" class="p-8 text-center text-gray-400"><i class="fas fa-spinner animate-spin mr-2"></i>居間をのぞき中...</div>
-                <div id="timeline-posts" class="divide-y twitter-border"></div>
+                <div id="timeline-posts" class="divide-y border-[#38444d]"></div>
             </section>
 
-            <section id="tab-profile-edit" class="hidden p-6 space-y-8">
+            <section id="view-settings" class="hidden p-6 space-y-8">
                 <div>
-                    <div class="font-bold text-xl mb-6 border-b twitter-border pb-2">自室の模様替え</div>
+                    <div class="font-bold text-xl mb-6 border-b border-[#38444d] pb-2">自室の模様替え</div>
                     <div class="space-y-5 max-w-md">
                         <div>
                             <label class="block text-gray-400 text-sm mb-1">表札の名前</label>
-                            <input type="text" id="edit-display-name" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none focus:border-[#5999FF]">
-                        </div>
-                        <div class="bg-[#192734]/40 p-4 rounded-xl border twitter-border space-y-3">
-                            <label class="block text-gray-400 text-sm">アイコン画像</label>
-                            <div class="flex items-center space-x-4">
-                                <input type="file" id="edit-icon-file" accept="image/*" onchange="previewImage(this, 'edit-preview')" class="block w-full text-xs text-gray-400">
-                                <img id="edit-preview" src="" class="w-14 h-14 rounded-full object-cover border twitter-border hidden">
-                            </div>
+                            <input type="text" id="edit-display-name" class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none">
                         </div>
                         <div>
                             <label class="block text-gray-400 text-sm mb-1">自己紹介</label>
-                            <textarea id="edit-bio" class="w-full bg-[#192734] border twitter-border p-2.5 rounded outline-none h-24 resize-none focus:border-[#5999FF]"></textarea>
+                            <textarea id="edit-bio" class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none h-24 resize-none"></textarea>
                         </div>
-                        <button onclick="saveProfile()" class="brand-color-bg text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">保存する</button>
+                        <button onclick="saveProfile()" class="bg-[#5999FF] text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">保存する</button>
                     </div>
                 </div>
+            </section>
 
-                <div class="pt-6 border-t border-red-900/40">
-                    <div class="font-bold text-xl text-red-400 mb-2">危機管理・アカウント設定</div>
-                    <p class="text-gray-400 text-xs mb-4">Loggiaからの一時離脱、または全データの抹消を自分自身の意志で行えます。</p>
-                    <div class="flex flex-wrap gap-4">
-                        <button onclick="openStopConfirmModal()" class="bg-amber-600/20 text-amber-400 border border-amber-500/30 font-bold px-4 py-2.5 rounded-xl hover:bg-amber-600/40 cursor-pointer text-sm">
-                            <i class="fas fa-moon mr-2"></i>アカウントを一時停止(Stop)
-                        </button>
-                        <button onclick="openDeleteConfirmModal()" class="bg-red-600/20 text-red-400 border border-red-500/30 font-bold px-4 py-2.5 rounded-xl hover:bg-red-600/40 cursor-pointer text-sm">
-                            <i class="fas fa-trash-alt mr-2"></i>全データを完全削除(Delete)
+            <section id="view-admin" class="hidden p-6 space-y-6">
+                <div class="font-bold text-xl mb-4 border-b border-[#38444d] pb-2 text-amber-400">
+                    <i class="fas fa-user-shield mr-2"></i>Loggia 中央統括管理室
+                </div>
+                <div class="bg-[#192734]/40 p-6 rounded-2xl border border-[#38444d] space-y-4">
+                    <h3 class="text-lg font-bold text-white flex items-center">
+                        <i class="fas fa-toggle-on mr-2 text-amber-400"></i>一般住人へのメンテナンス画面表示
+                    </h3>
+                    <div class="flex items-center space-x-4 pt-2">
+                        <div id="admin-maint-status-badge" class="px-4 py-2 rounded-xl font-bold text-sm bg-zinc-800 text-gray-400 border border-[#38444d]">
+                            読み込み中...
+                        </div>
+                        <button id="btn-toggle-maint" onclick="toggleMaintenanceMode()" class="bg-[#5999FF] text-white font-bold px-6 py-2 rounded-full text-sm cursor-pointer shadow hover:opacity-90">
+                            設定を切り替える
                         </button>
                     </div>
                 </div>
             </section>
         </main>
-
-        <div class="hidden lg:block bg-[#15202b]"></div>
     </div>
 
     <footer class="fixed bottom-0 left-0 right-0 bg-[#15202b]/95 backdrop-blur border-t border-[#38444d] flex justify-around p-3 md:hidden z-20 shadow-lg">
-        <button onclick="switchTab('timeline')" class="text-2xl text-gray-400 focus:text-white px-4 py-1"><i class="fas fa-couch"></i></button>
-        <button onclick="openMyRoomProfile()" class="text-2xl text-gray-400 focus:text-white px-4 py-1"><i class="fas fa-user"></i></button>
-        <button onclick="switchTab('profile-edit')" class="text-2xl text-gray-400 focus:text-white px-4 py-1"><i class="fas fa-door-open"></i></button>
+        <button onclick="navigateToPage('timeline')" class="text-2xl text-gray-400 focus:text-white px-3 py-1 cursor-pointer"><i class="fas fa-couch"></i></button>
+        <button onclick="navigateToPage('profile', currentUser?.username)" class="text-2xl text-gray-400 focus:text-white px-3 py-1 cursor-pointer"><i class="fas fa-user"></i></button>
+        <button onclick="navigateToPage('settings')" class="text-2xl text-gray-400 focus:text-white px-3 py-1 cursor-pointer"><i class="fas fa-door-open"></i></button>
+        <button id="nav-admin-btn-mobile" onclick="navigateToPage('admin')" class="text-2xl text-amber-500/60 focus:text-amber-400 px-3 py-1 hidden cursor-pointer"><i class="fas fa-tools"></i></button>
+        <button onclick="handleLogout()" class="text-2xl text-red-400/60 focus:text-red-400 px-3 py-1 cursor-pointer"><i class="fas fa-sign-out-alt"></i></button>
     </footer>
 
     <script>
@@ -208,30 +213,211 @@
 
         let currentUser = null;
         let autoRefreshInterval = null;
-        let selectedProfileUser = null; 
+        let currentMaintenanceState = false; 
 
         window.onload = function() {
+            checkSystemMaintenanceAndRoute();
+        };
+
+        function checkSystemMaintenanceAndRoute() {
             const cached = localStorage.getItem('loggia_user');
-            if (cached) {
-                currentUser = JSON.parse(cached);
-                updateUserUI();
-                loadTimeline(false);
-                startAutoRefresh();
-            } else {
-                document.getElementById('auth-gate').classList.remove('hidden');
-            }
+            let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
+
+            fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
+            .then(res => res.json())
+            .then(res => {
+                if (cached) currentUser = JSON.parse(cached);
+                
+                if (res.maintenance === "ON" && !res.bypass) {
+                    document.getElementById('maintenance-gate').classList.remove('hidden');
+                    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+                    return;
+                }
+                
+                document.getElementById('maintenance-gate').classList.add('hidden');
+                currentMaintenanceState = (res.maintenance === "ON");
+                updateAdminPanelUI();
+
+                if (cached) {
+                    updateUserUI();
+                    applyURLRoute();
+                    startAutoRefresh();
+                } else {
+                    document.getElementById('auth-gate').classList.remove('hidden');
+                }
+            })
+            .catch(() => {
+                if (cached) { updateUserUI(); applyURLRoute(); startAutoRefresh(); } 
+                else { document.getElementById('auth-gate').classList.remove('hidden'); }
+            });
+
             document.getElementById('post-message').oninput = function() {
                 document.getElementById('char-count').innerText = this.value.length + " / 140";
             };
-        };
+        }
+
+        function toggleAdminEmergencyLogin() {
+            const box = document.getElementById('admin-emergency-box');
+            box.classList.toggle('hidden');
+        }
+
+        function executeAdminEmergencyLogin() {
+            const email = document.getElementById('maint-admin-email').value.trim();
+            const password = document.getElementById('maint-admin-password').value.trim();
+            if (!email || !password) return;
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && res.user.role === 'Admin') {
+                    localStorage.setItem('loggia_user', JSON.stringify(res.user));
+                    location.reload(); 
+                } else {
+                    alert('管理者として認証されませんでした。');
+                }
+            });
+        }
+
+        function applyURLRoute() {
+            const params = new URLSearchParams(window.location.search);
+            const page = params.get('page') || 'timeline';
+            const id = params.get('id');
+
+            document.getElementById('view-timeline').classList.add('hidden');
+            document.getElementById('view-settings').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            document.getElementById('profile-card-area').classList.add('hidden');
+            document.getElementById('global-back-btn').classList.add('hidden');
+            document.getElementById('timeline-post-box').classList.remove('hidden');
+            document.getElementById('feed-header-title').innerText = "Loggia の「今」";
+
+            if (page === 'timeline') {
+                document.getElementById('view-timeline').classList.remove('hidden');
+                loadTimelineFeed();
+            } else if (page === 'profile' && id) {
+                document.getElementById('view-timeline').classList.remove('hidden');
+                document.getElementById('timeline-post-box').classList.add('hidden');
+                document.getElementById('global-back-btn').classList.remove('hidden');
+                renderProfileCard(id);
+            } else if (page === 'post' && id) {
+                document.getElementById('view-timeline').classList.remove('hidden');
+                document.getElementById('global-back-btn').classList.remove('hidden');
+                document.getElementById('feed-header-title').innerText = "つぶやきの詳細";
+                loadSinglePost(id);
+            } else if (page === 'settings') {
+                document.getElementById('view-settings').classList.remove('hidden');
+                initSettingsForm();
+            } else if (page === 'admin' && currentUser?.role === 'Admin') {
+                document.getElementById('view-admin').classList.remove('hidden');
+            } else {
+                navigateToPage('timeline');
+            }
+        }
+
+        function navigateToPage(pageName, id = null) {
+            let newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            let query = `?page=${pageName}`;
+            if (id) query += `&id=${id}`;
+            window.history.pushState({ path: newUrl + query }, '', newUrl + query);
+            applyURLRoute();
+        }
 
         function startAutoRefresh() {
             if (autoRefreshInterval) clearInterval(autoRefreshInterval);
             autoRefreshInterval = setInterval(() => {
-                if (!document.getElementById('tab-timeline').classList.contains('hidden')) {
-                    loadTimeline(true);
+                const params = new URLSearchParams(window.location.search);
+                const page = params.get('page') || 'timeline';
+                if (page === 'timeline' || page === 'profile' || page === 'post') {
+                    if (page === 'timeline') loadTimelineFeed(true);
+                    if (page === 'profile') loadTimelineFeed(true, params.get('id'), null);
+                    if (page === 'post') loadTimelineFeed(true, null, params.get('id'));
                 }
-            }, 10000);
+            }, 12000);
+        }
+
+        function loadTimelineFeed(isAuto = false, targetUser = null, targetPostId = null) {
+            if (!currentUser) return;
+            if (!isAuto) document.getElementById('timeline-loading').classList.remove('hidden');
+            
+            let url = `${GAS_API_URL}?action=getTimeline&username=${currentUser.username}&isAutoRefresh=${isAuto}`;
+            if (targetUser) url += `&targetUser=${targetUser}`;
+            if (targetPostId) url += `&targetPostId=${targetPostId}`;
+
+            fetch(url)
+            .then(res => res.json())
+            .then(res => {
+                if (!isAuto) document.getElementById('timeline-loading').classList.add('hidden');
+                if (res.success) { setSyncStatus(true); renderTimeline(res.data); } 
+                else { setSyncStatus(false); }
+            })
+            .catch(() => {
+                if (!isAuto) document.getElementById('timeline-loading').classList.add('hidden');
+                setSyncStatus(false);
+            });
+        }
+
+        function renderProfileCard(username) {
+            document.getElementById('timeline-posts').innerHTML = '';
+            fetch(`${GAS_API_URL}?action=getUserProfile&targetUser=${username}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    const u = res.user;
+                    document.getElementById('feed-header-title').innerText = `${u.display_name} の部屋`;
+                    document.getElementById('prof-card-avatar').innerHTML = getAvatarHtml(u.icon_url, "w-20 h-20 rounded-full object-cover border-2 border-zinc-700");
+                    document.getElementById('prof-card-display').innerText = u.display_name;
+                    document.getElementById('prof-card-username').innerText = `@${u.username}`;
+                    document.getElementById('prof-card-bio').innerText = u.bio || 'まだ自己紹介が書かれていません。';
+                    
+                    const badge = document.getElementById('prof-card-badge');
+                    badge.className = u.status === 'Active' ? "px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/20" : "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                    badge.innerText = u.status === 'Active' ? "在住" : "休眠中";
+                    
+                    document.getElementById('profile-card-area').classList.remove('hidden');
+                    loadTimelineFeed(false, username, null);
+                }
+            });
+        }
+
+        function loadSinglePost(postId) {
+            loadTimelineFeed(false, null, postId);
+        }
+
+        function initSettingsForm() {
+            document.getElementById('edit-display-name').value = currentUser.display_name || ''; 
+            document.getElementById('edit-bio').value = currentUser.bio || ''; 
+        }
+
+        function updateAdminPanelUI() {
+            const badge = document.getElementById('admin-maint-status-badge');
+            if(!badge) return;
+            if (currentMaintenanceState) {
+                badge.className = "px-4 py-2 rounded-xl font-bold text-sm bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse";
+                badge.innerHTML = "<i class='fas fa-exclamation-triangle mr-1'></i> メンテナンス中 (一般ユーザー締め出し)";
+            } else {
+                badge.className = "px-4 py-2 rounded-xl font-bold text-sm bg-green-500/10 text-green-400 border border-green-500/20";
+                badge.innerHTML = "<i class='fas fa-check-circle mr-1'></i> 通常稼働中";
+            }
+        }
+
+        function toggleMaintenanceMode() {
+            if (!currentUser || currentUser.role !== 'Admin') return;
+            const targetState = currentMaintenanceState ? "OFF" : "ON";
+            const btn = document.getElementById('btn-toggle-maint');
+            btn.disabled = true; btn.style.opacity = "0.5";
+
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'toggleMaintenance', username: currentUser.username, state: targetState })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success) {
+                    currentMaintenanceState = (targetState === "ON");
+                    updateAdminPanelUI();
+                } else { alert("変更失敗: " + res.error); }
+            })
+            .finally(() => { btn.disabled = false; btn.style.opacity = "1"; });
         }
 
         function setSyncStatus(isOnline) {
@@ -239,7 +425,7 @@
             const dotEl = document.getElementById('sync-dot');
             const textEl = document.getElementById('sync-text');
             if (isOnline) {
-                statusEl.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20 animate-pulse";
+                statusEl.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20";
                 dotEl.className = "w-1.5 h-1.5 mr-1.5 bg-green-400 rounded-full";
                 textEl.innerText = "自動同期中";
             } else {
@@ -261,99 +447,59 @@
             setTimeout(() => { container.classList.add('hidden'); }, 200);
         }
 
-        function loadTimeline(isAutoRefresh = false) {
-            if (!currentUser) return;
-            if (!isAutoRefresh) document.getElementById('timeline-loading').classList.remove('hidden');
-            let url = `${GAS_API_URL}?action=getTimeline&username=${currentUser.username}&isAutoRefresh=${isAutoRefresh}`;
-            if (selectedProfileUser) url += `&targetUser=${selectedProfileUser}`;
-
-            fetch(url)
-            .then(res => res.json())
-            .then(res => {
-                if (!isAutoRefresh) document.getElementById('timeline-loading').classList.add('hidden');
-                if (res.success) { setSyncStatus(true); renderTimeline(res.data); } 
-                else { setSyncStatus(false); }
-            })
-            .catch(() => {
-                if (!isAutoRefresh) document.getElementById('timeline-loading').classList.add('hidden');
-                setSyncStatus(false);
-            });
-        }
-
-        function viewUserProfile(username) {
-            selectedProfileUser = username;
-            document.getElementById('timeline-posts').innerHTML = '';
-            document.getElementById('timeline-post-box').classList.add('hidden');
-            document.getElementById('profile-back-btn').classList.remove('hidden');
-            
-            fetch(`${GAS_API_URL}?action=getUserProfile&targetUser=${username}`)
-            .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    const u = res.user;
-                    document.getElementById('timeline-header-title').innerText = `${u.display_name} の部屋`;
-                    document.getElementById('prof-card-avatar').innerHTML = getAvatarHtml(u.icon_url, "w-20 h-20 rounded-full object-cover border-2 border-zinc-700");
-                    document.getElementById('prof-card-display').innerText = u.display_name;
-                    document.getElementById('prof-card-username').innerText = `@${u.username}`;
-                    document.getElementById('prof-card-bio').innerText = u.bio || 'まだ自己紹介が書かれていません。';
-                    
-                    const badge = document.getElementById('prof-card-badge');
-                    if (u.status === 'Ban') { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30"; badge.innerText = "BAN"; }
-                    else if (u.status === 'Stop') { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30"; badge.innerText = "休眠中"; }
-                    else { badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/20"; badge.innerText = "在住"; }
-                    
-                    document.getElementById('profile-card-area').classList.remove('hidden');
-                    loadTimeline(false);
-                }
-            });
-        }
-
-        function openMyRoomProfile() { switchTab('timeline'); viewUserProfile(currentUser.username); }
-        function exitProfileMode() {
-            selectedProfileUser = null;
-            document.getElementById('profile-card-area').classList.add('hidden');
-            document.getElementById('profile-back-btn').classList.add('hidden');
-            document.getElementById('timeline-post-box').classList.remove('hidden');
-            document.getElementById('timeline-header-title').innerText = "Loggia の「今」";
-            loadTimeline(false);
+        function confirmExternalLink(url) {
+            const html = `
+                <div class="text-center space-y-4 py-2">
+                    <div class="text-4xl text-amber-400"><i class="fas fa-exclamation-circle"></i></div>
+                    <h3 class="text-lg font-bold text-white">Loggiaの外へ出かけますか？</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed break-all bg-zinc-900/60 p-3 rounded-xl border border-[#38444d]">
+                        移動先: <span class="text-blue-400 underline">${url}</span>
+                    </p>
+                    <p class="text-gray-500 text-[11px]">知らない人が貼ったURLや、ログインを促す怪しいサイトには十分ご注意ください。</p>
+                    <div class="flex justify-center space-x-3 pt-2">
+                        <button onclick="closeCustomModal()" class="bg-zinc-800 text-gray-300 px-5 py-2 rounded-full text-xs font-bold cursor-pointer hover:text-white transition">ここに残る</button>
+                        <a href="${url}" target="_blank" rel="noopener noreferrer" onclick="closeCustomModal()" class="bg-blue-500 text-white px-5 py-2 rounded-full text-xs font-bold hover:opacity-90 transition inline-block">外に出る</a>
+                    </div>
+                </div>`;
+            openCustomModal(html);
         }
 
         function renderTimeline(posts) {
             const container = document.getElementById('timeline-posts');
             container.innerHTML = '';
             if (!posts || posts.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center text-gray-500">投稿はまだありません。</div>';
+                container.innerHTML = '<div class="p-8 text-center text-gray-500">表示できる投稿はありません。</div>';
                 return;
             }
             posts.forEach(post => {
-                const avatarHtml = `<div onclick="exitProfileMode(); viewUserProfile('${post.username}')" class="cursor-pointer hover:opacity-80 transition">${getAvatarHtml(post.icon_url, "w-11 h-11 rounded-full object-cover flex-shrink-0")}</div>`;
+                const avatarHtml = `<div onclick="navigateToPage('profile', '${post.username}')" class="cursor-pointer hover:opacity-80 transition">${getAvatarHtml(post.icon_url, "w-11 h-11 rounded-full object-cover flex-shrink-0")}</div>`;
                 const hasLiked = post.isLiked === true;
 
                 let replyTagHtml = '';
                 if (post.post_type === 'reply' && post.reply_parent) {
-                    replyTagHtml = `<div class="text-xs text-gray-400 mb-1 bg-[#192734]/30 p-2 rounded border border-dashed twitter-border"><i class="far fa-comment-dots mr-1"></i> @${post.reply_to} への返信: <span class="text-gray-500 italic">${post.reply_parent.message}</span></div>`;
+                    replyTagHtml = `<div class="text-xs text-gray-400 mb-1 bg-[#192734]/30 p-2 rounded border border-dashed border-[#38444d]"><i class="far fa-comment-dots mr-1"></i> @${post.reply_to} への返信: <span class="text-gray-500 italic">${post.reply_parent.message}</span></div>`;
                 }
 
                 let repostTagHtml = '';
                 if (post.post_type === 'repost' && post.repost_parent) {
                     repostTagHtml = `
-                        <div class="text-xs brand-color-text mb-1"><i class="fas fa-retweet mr-1"></i> @${post.username} がリポスト</div>
-                        <div class="bg-zinc-900/40 p-3 rounded-xl border twitter-border my-2 text-sm w-full">
+                        <div class="text-xs text-[#5999FF] mb-1"><i class="fas fa-retweet mr-1"></i> @${post.username} がリポスト</div>
+                        <div class="bg-zinc-900/40 p-3 rounded-xl border border-[#38444d] my-2 text-sm w-full">
                            <span class="font-bold text-gray-300">@${post.repost_of}</span>
                            <p class="text-gray-400 mt-1">${post.repost_parent.message}</p>
                         </div>`;
                 }
 
                 const postHtml = `
-                    <div class="p-4 twitter-hover flex space-x-3 transition w-full">
+                    <div class="p-4 hover:bg-[#192734]/40 flex space-x-3 transition w-full">
                         ${avatarHtml}
                         <div class="flex-1 min-w-0">
                             ${post.post_type === 'repost' ? repostTagHtml : ''}
                             <div class="flex items-center space-x-2 text-sm">
-                                <span onclick="exitProfileMode(); viewUserProfile('${post.username}')" class="font-bold text-white truncate cursor-pointer hover:underline">${post.display_name}</span>
-                                <span onclick="exitProfileMode(); viewUserProfile('${post.username}')" class="text-gray-400 truncate cursor-pointer">@${post.username}</span>
+                                <span onclick="navigateToPage('profile', '${post.username}')" class="font-bold text-white truncate cursor-pointer hover:underline">${post.display_name}</span>
+                                <span onclick="navigateToPage('profile', '${post.username}')" class="text-gray-400 truncate cursor-pointer">@${post.username}</span>
                                 <span class="text-gray-500">·</span>
-                                <span class="text-gray-500 text-xs">${post.timestamp}</span>
+                                <span onclick="navigateToPage('post', '${post.id}')" class="text-gray-500 text-xs cursor-pointer hover:underline">${post.timestamp}</span>
                             </div>
                             ${post.post_type === 'reply' ? replyTagHtml : ''}
                             ${post.post_type !== 'repost' ? `<div class="text-white mt-1 break-words whitespace-pre-wrap text-[15px]">${linkify(post.message || '')}</div>` : ''}
@@ -370,228 +516,145 @@
             });
         }
 
-        // 🛠️ 連打防止ガード付き：通常新規投稿送信
         function submitPost() {
             const textarea = document.getElementById('post-message');
             const message = textarea.value.trim();
             if (!message) return;
-
-            const btn = document.getElementById('btn-post-submit');
-            const btnText = document.getElementById('btn-post-text');
-            
-            // 🔒 連打ロック発動
-            btn.disabled = true;
-            btn.style.pointerEvents = 'none';
-            btn.style.opacity = '0.5';
-            btnText.innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> 送信中...';
-
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) 
-            })
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) })
             .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    textarea.value = '';
-                    document.getElementById('char-count').innerText = "0 / 140";
-                    loadTimeline(false);
-                }
-            })
-            .finally(() => {
-                // 🔓 ロック解除
-                btn.disabled = false;
-                btn.style.pointerEvents = 'auto';
-                btn.style.opacity = '1';
-                btnText.innerText = '届け！';
-            });
+            .then(res => { if (res.success) { textarea.value = ''; document.getElementById('char-count').innerText = "0 / 140"; applyURLRoute(); } });
         }
 
-        // 返信ウィンドウの生成
         function openReplyModal(postId, username) {
             const html = `
                 <h3 class="text-lg font-bold mb-3">@${username} へ返信</h3>
-                <textarea id="modal-reply-msg" placeholder="返信を部屋に響かせる..." class="w-full bg-[#15202b] border twitter-border p-3 rounded-xl h-24 text-white outline-none focus:border-[#5999FF] resize-none"></textarea>
-                <div class="flex justify-end mt-3">
-                    <button id="btn-reply-submit" onclick="submitReply('${postId}')" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full text-sm flex items-center">
-                       <span id="btn-reply-text">返信を送信</span>
-                    </button>
-                </div>`;
+                <textarea id="modal-reply-msg" placeholder="返信を部屋に響かせる..." class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded-xl h-24 text-white outline-none resize-none"></textarea>
+                <div class="flex justify-end mt-3"><button onclick="submitReply('${postId}')" class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full text-sm">返信を送信</button></div>`;
             openCustomModal(html);
         }
-
-        // 🛠️ 連打防止ガード付き：返信送信
         function submitReply(parentPostId) {
             const message = document.getElementById('modal-reply-msg').value.trim();
             if (!message) return;
-
-            const btn = document.getElementById('btn-reply-submit');
-            const btnText = document.getElementById('btn-reply-text');
-
-            // 🔒 連打ロック発動
-            btn.disabled = true;
-            btn.style.pointerEvents = 'none';
-            btn.style.opacity = '0.5';
-            btnText.innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> 送信中...';
-
-            fetch(GAS_API_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message, reply_to: parentPostId, post_type: 'reply' }) 
-            })
-            .then(() => { closeCustomModal(); loadTimeline(false); })
-            .finally(() => {
-                // ポップアップが閉じるので不要ですが、安全のため戻す処理
-                if(btnText) btnText.innerText = '返信を送信';
-            });
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message, reply_to: parentPostId, post_type: 'reply' }) })
+            .then(() => { closeCustomModal(); applyURLRoute(); });
         }
 
         function openRepostModal(postId, username) {
             const html = `
-                <h3 class="text-lg font-bold mb-2">この投稿をリポストしますか？</h3>
-                <p class="text-gray-400 text-sm mb-4">@${username} さんの投稿をタイムラインの最上部に引き上げます。</p>
-                <div class="flex justify-end space-x-3">
-                    <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">やめる</button>
-                    <button id="btn-repost-submit" onclick="submitRepost('${postId}')" class="brand-color-bg text-white font-bold px-5 py-2 rounded-full text-sm">リポストを実行</button>
-                </div>`;
+                <h3 class="text-lg font-bold mb-2">リポストしますか？</h3>
+                <div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">やめる</button><button onclick="submitRepost('${postId}')" class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full text-sm">リポスト</button></div>`;
             openCustomModal(html);
         }
         function submitRepost(targetPostId) {
-            const btn = document.getElementById('btn-repost-submit');
-            btn.disabled = true; btn.style.pointerEvents = 'none'; btn.style.opacity = '0.5';
             fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: '', repost_of: targetPostId, post_type: 'repost' }) })
-            .then(() => { closeCustomModal(); loadTimeline(false); });
-        }
-
-        // 🛡️ ==========================================
-        //   Google reCAPTCHA v2 フロントエンド制御ロジック
-        // =============================================
-        // 1. ログイン処理トリガー
-        function triggerLoginWithCaptcha() {
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-            if (!email || !password) { alert('資格情報を入力してください。'); return; }
-            
-            // ボタンのローディング化
-            document.getElementById('btn-login-submit').style.pointerEvents = 'none';
-            document.getElementById('btn-login-text').innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> 安全性を検証中...';
-            
-            // reCAPTCHAの検証を実行（チャレンジが出現するか、自動でパスします）
-            grecaptcha.execute(0); // 0番目のインデックス（ログイン用）
-        }
-
-        // ログイン検証成功時に自動で走るコールバック
-        function onLoginCaptchaSuccess(token) {
-            // 検証トークンが取れたらそのまま裏でログインAPIを叩く
-            executeLoginAction();
-            // 次回のためにreCAPTCHAの状態をリセット
-            grecaptcha.reset(0);
+            .then(() => { closeCustomModal(); applyURLRoute(); });
         }
 
         function executeLoginAction() {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value.trim();
-
             fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) })
             .then(res => res.json())
             .then(res => {
                 if (res.success) { loginSuccess(res.user); } 
-                else if (res.isBlocked) {
-                    document.getElementById('auth-gate').classList.add('hidden');
-                    const blockGate = document.getElementById('block-gate');
-                    const iconArea = document.getElementById('block-icon-area');
-                    const titleArea = document.getElementById('block-title');
-                    const descArea = document.getElementById('block-desc');
-                    const actionArea = document.getElementById('block-action-area');
-                    blockGate.classList.remove('hidden');
-                    actionArea.innerHTML = '';
-
-                    if (res.status === 'Ban') {
-                        iconArea.innerText = "🚨"; titleArea.innerText = "アカウントが凍結されています";
-                        titleArea.className = "text-2xl font-bold text-red-400";
-                        descArea.innerText = "規約違反または運営判断により、このアカウントはロックされています。";
-                        actionArea.innerHTML = `<button onclick="location.reload()" class="bg-zinc-800 text-white px-6 py-2 rounded-full font-bold">戻る</button>`;
-                    } else if (res.status === 'Stop') {
-                        iconArea.innerText = "💤"; titleArea.innerText = "現在休眠状態です";
-                        titleArea.className = "text-2xl font-bold text-amber-400";
-                        descArea.innerText = "アカウントは一時停止されています。いつでも即座に再始動できます！";
-                        actionArea.innerHTML = `<div class="flex flex-col space-y-3"><button onclick="reactivateAccount('${res.username}')" class="brand-color-bg text-white px-6 py-3 rounded-full font-bold shadow-lg">居間を再始動する</button><button onclick="location.reload()" class="text-gray-400 text-sm hover:underline">ログインに戻る</button></div>`;
-                    }
-                } else {
-                    alert('ログイン失敗: ' + res.error);
-                }
-            })
-            .finally(() => {
-                document.getElementById('btn-login-submit').style.pointerEvents = 'auto';
-                document.getElementById('btn-login-text').innerText = '居間に入る';
+                else { alert('ログイン失敗: ' + res.error); }
             });
         }
 
-        // 2. 新規入居処理トリガー
-        function triggerRegisterWithCaptcha() {
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value.trim();
-            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
-            const birthday = document.getElementById('reg-birth').value;
-            const username = document.getElementById('reg-username').value.trim().replace('@','');
-            if (!email || !password || !passwordConfirm || !birthday || !username) { alert('必須項目が未入力です。'); return; }
-            if (password !== passwordConfirm) { alert('パスワードが一致しません。'); return; }
-
-            document.getElementById('btn-reg-submit').style.pointerEvents = 'none';
-            document.getElementById('btn-reg-text').innerHTML = '<i class="fas fa-spinner animate-spin mr-1"></i> 安全性を検証中...';
-
-            grecaptcha.execute(1); // 1番目のインデックス（新規登録用）
-        }
-
-        // 新規登録検証成功時に自動で走るコールバック
-        function onRegisterCaptchaSuccess(token) {
-            executeRegisterAction();
-            grecaptcha.reset(1);
-        }
-
+        // 🤖 reCAPTCHAトークンチェック処理を完全復活
         async function executeRegisterAction() {
             const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value.trim();
             const birthday = document.getElementById('reg-birth').value;
             const username = document.getElementById('reg-username').value.trim().replace('@','');
-            let display_name = document.getElementById('reg-display').value.trim();
-            if (!display_name) display_name = '新参者';
+            let display_name = document.getElementById('reg-display').value.trim() || '新参者';
             let icon_url = 'logo.jpg';
-            if (document.getElementById('reg-icon-file').files[0]) icon_url = await fileToBase64(document.getElementById('reg-icon-file').files[0]);
 
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'register', username, display_name, icon_url, email, password, birthday }) })
+            // reCAPTCHAのチェックが入っているか検証
+            const token = grecaptcha.getResponse();
+            if (!token) {
+                alert('あなたがロボットではないことを証明するために、チェックボックスをオンにしてください。');
+                return;
+            }
+
+            fetch(GAS_API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    action: 'register', 
+                    username, 
+                    display_name, 
+                    icon_url, 
+                    email, 
+                    password, 
+                    birthday,
+                    recaptchaToken: token // トークンをGASへ送信
+                }) 
+            })
             .then(res => res.json())
             .then(res => { 
-                if (res.success) { loginSuccess(res.user); } 
-                else { alert(res.error); } 
-            })
-            .finally(() => {
-                document.getElementById('btn-reg-submit').style.pointerEvents = 'auto';
-                document.getElementById('btn-reg-text').innerText = '入居を確定する';
+                if (res.success) { 
+                    loginSuccess(res.user); 
+                } else { 
+                    alert(res.error); 
+                    grecaptcha.reset(); // エラーが起きたらreCAPTCHAをリセット
+                } 
             });
         }
 
+        function saveProfile() {
+            const dName = document.getElementById('edit-display-name').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', username: currentUser.username, display_name: dName, bio: bio, icon_url: currentUser.icon_url }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    currentUser.display_name = dName; currentUser.bio = bio;
+                    localStorage.setItem('loggia_user', JSON.stringify(currentUser));
+                    updateUserUI(); alert('変更を保存しました！'); navigateToPage('timeline');
+                }
+            });
+        }
 
-        // 共通系ロジック（変更なし）
-        function openStopConfirmModal() {
-            const html = `<h3 class="text-lg font-bold text-amber-400 mb-2"><i class="fas fa-moon mr-2"></i>部屋を休眠状態(Stop)にしますか？</h3><p class="text-gray-300 text-sm leading-relaxed mb-4">一時停止すると自動的にログアウトされ、他の住人からは一時的に「休眠中の住人」と表示されます。<br><span class="text-amber-300 font-bold">いつでもログインし直すだけで自動的に部屋を完全復活（再始動）させることができます。</span></p><div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button><button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button></div>`;
-            openCustomModal(html);
+        function loginSuccess(user) { 
+            currentUser = user; 
+            localStorage.setItem('loggia_user', JSON.stringify(user)); 
+            document.getElementById('auth-gate').classList.add('hidden'); 
+            checkSystemMaintenanceAndRoute(); 
         }
-        function openDeleteConfirmModal() {
-            const html = `<h3 class="text-lg font-bold text-red-400 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）</h3><p class="text-gray-300 text-sm leading-relaxed mb-4">このボタンを押すと、あなたのユーザーデータ、およびこれまでのすべての投稿が<span class="text-red-400 font-bold underline">データベースから跡形もなく完全物理削除</span>されます。二度と元には戻せません。</p><div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button><button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button></div>`;
-            openCustomModal(html);
-        }
-        function submitChangeStatus(statusType) { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'changeStatus', username: currentUser.username, status: statusType }) }).then(() => { handleLogout(); }); }
-        function submitDeleteAccount() { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteAccount', username: currentUser.username }) }).then(() => { handleLogout(); }); }
-        function reactivateAccount(username) { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'reactivate', username: username }) }).then(res => res.json()).then(res => { if (res.success) { document.getElementById('block-gate').classList.add('hidden'); loginSuccess(res.user); } else { alert(res.error); } }); }
-        function loginSuccess(user) { currentUser = user; localStorage.setItem('loggia_user', JSON.stringify(user)); document.getElementById('auth-gate').classList.add('hidden'); updateUserUI(); exitProfileMode(); }
         function handleLogout() { if(autoRefreshInterval) clearInterval(autoRefreshInterval); localStorage.removeItem('loggia_user'); location.reload(); }
-        function getAvatarHtml(url, cssClass = "w-10 h-10 rounded-full object-cover") { if (!url || url === 'logo.jpg') return `<img src="logo.jpg" class="${cssClass} bg-[#000000]" onerror="this.src='https://placehold.co/100x100/000000/ffffff?text=L'">`; return `<img src="${url}" class="${cssClass}">`; }
-        function updateUserUI() { if (!currentUser) return; document.getElementById('nav-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url); document.getElementById('form-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url, "w-12 h-12 rounded-full object-cover"); document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人'; document.getElementById('nav-username').innerText = '@' + currentUser.username; }
-        function switchTab(tabName) { if (tabName === 'timeline') { document.getElementById('tab-timeline').classList.remove('hidden'); document.getElementById('tab-profile-edit').classList.add('hidden'); exitProfileMode(); } else { document.getElementById('tab-timeline').classList.add('hidden'); document.getElementById('tab-profile-edit').classList.remove('hidden'); document.getElementById('edit-display-name').value = currentUser.display_name || ''; document.getElementById('edit-bio').value = currentUser.bio || ''; const preview = document.getElementById('edit-preview'); if (currentUser.icon_url) { preview.src = currentUser.icon_url; preview.classList.remove('hidden'); } } }
-        function linkify(text) { return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="#" onclick="safeNavigate('${url}'); return false;" class="text-blue-400 hover:underline break-all"><i class="fas fa-external-link-alt text-xs mr-1"></i>${url}</a>`); }
-        function safeNavigate(url) { if (confirm(`外部サイトへ移動しますか？\n\n${url}`)) window.open(url, '_blank', 'noopener,noreferrer'); }
-        function previewImage(input, previewId) { const preview = document.getElementById(previewId); if (input.files[0]) { const reader = new FileReader(); reader.onload = e => { preview.src = e.target.result; preview.classList.remove('hidden'); }; reader.readAsDataURL(input.files[0]); } }
-        function fileToBase64(file) { return new Promise((resolve, reject) => { if (!file) resolve(''); const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = e => reject(e); }); }
-        function toggleLike(postId, buttonEl) { const heartIcon = buttonEl.querySelector('i'); const countSpan = buttonEl.querySelector('span'); buttonEl.style.pointerEvents = 'none'; fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'toggleLike', postId: postId, username: currentUser.username }) }).then(res => res.json()).then(res => { buttonEl.style.pointerEvents = 'auto'; if (res.success) { buttonEl.setAttribute('data-liked', String(res.isLiked)); countSpan.innerText = res.likesCount; if (res.isLiked) { heartIcon.className = 'fas fa-heart text-pink-500 mr-1'; buttonEl.classList.add('text-pink-500'); } else { heartIcon.className = 'far fa-heart mr-1'; buttonEl.classList.remove('text-pink-500'); } } }).catch(() => { buttonEl.style.pointerEvents = 'auto'; }); }
+        function getAvatarHtml(url, css = "w-10 h-10 rounded-full object-cover") { return `<img src="${url || 'logo.jpg'}" class="${css}" onerror="this.src='logo.jpg'">`; }
+        
+        function updateUserUI() { 
+            if (!currentUser) return; 
+            document.getElementById('nav-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url); 
+            document.getElementById('form-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url, "w-12 h-12 rounded-full object-cover"); 
+            document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人'; 
+            document.getElementById('nav-username').innerText = '@' + currentUser.username; 
+            
+            if (currentUser.role === 'Admin') {
+                document.getElementById('nav-admin-btn').classList.remove('hidden');
+                document.getElementById('nav-admin-btn-mobile').classList.remove('hidden');
+            }
+        }
+        
+        function linkify(text) { 
+            return text.replace(/(https?:\/\/[^\s]+)/g, url => {
+                return `<span onclick="confirmExternalLink('${url}')" class="text-blue-400 hover:underline cursor-pointer"><i class="fas fa-external-link-alt text-xs mr-1"></i>${url}</span>`;
+            }); 
+        }
+        function previewImage(input, pId) { if (input.files[0]) { const r = new FileReader(); r.onload = e => { const p = document.getElementById(pId); p.src = e.target.result; p.classList.remove('hidden'); }; r.readAsDataURL(input.files[0]); } }
+        function toggleLike(pId, btn) { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'toggleLike', postId: pId, username: currentUser.username }) }).then(res => res.json()).then(res => { if(res.success) applyURLRoute(); }); }
+        function toggleAuthTab(tab) {
+            if(tab === 'login') {
+                document.getElementById('form-login').classList.remove('hidden'); document.getElementById('form-register').classList.add('hidden');
+                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold border-b-2 text-[#5999FF] border-[#5999FF]";
+                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
+            } else {
+                document.getElementById('form-login').classList.add('hidden'); document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
+                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-[#5999FF] border-[#5999FF]";
+            }
+        }
     </script>
 </body>
 </html>
