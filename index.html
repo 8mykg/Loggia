@@ -597,12 +597,10 @@
             let display_name = document.getElementById('reg-display').value.trim() || '新参者';
             let icon_url = 'logo.jpg';
 
-            // 📡 GAS（バックエンド）へデータを送信（ChatGPT推奨のContent-Typeを追加したド安定版）
+            // 【検索キーワード】: GAS（バックエンド）へデータを送信
+            // 📡 GAS（バックエンド）へデータを送信（OPTIONS通信を発生させない検証版）
             fetch(GAS_API_URL, { 
                 method: 'POST', 
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({ 
                     action: 'register', 
                     username, 
