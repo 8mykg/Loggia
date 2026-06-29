@@ -569,26 +569,7 @@
             });
         }
 
-// 【検索キーワード】: 非表示reCAPTCHA起動用トリガー
-        // 🤖 【変える部分】非表示reCAPTCHA起動用トリガー（パスワードチェックをしてから起動）
-        function startRegisterAction() {
-            const password = document.getElementById('reg-password').value.trim();
-            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
-
-            if (!password || !passwordConfirm) {
-                alert('パスワードと確認用パスワードの両方を入力してください。');
-                return;
-            }
-            if (password !== passwordConfirm) {
-                alert('パスワードと確認用パスワードが一致しません。もう一度ご確認ください。');
-                return;
-            }
-
-            // パスワードが一致していれば、裏で自動的にreCAPTCHAを実行
-            grecaptcha.execute();
-        }
-
-        // 🤖 【変える部分】Googleの認証が成功した時に、自動でGASへ通信を飛ばす関数
+// 🤖 【変える部分】Googleの認証が成功した時に、自動でGASへ通信を飛ばす関数
         async function onInvisibleSubmit(token) {
             const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value.trim();
@@ -598,7 +579,7 @@
             let icon_url = 'logo.jpg';
 
             // 【検索キーワード】: GAS（バックエンド）へデータを送信
-            // 📡 GAS（バックエンド）へデータを送信（OPTIONS通信を発生させない検証版）
+// 📡 GAS（バックエンド）へデータを送信（OPTIONS通信を発生させない検証版）
             fetch(GAS_API_URL, { 
                 method: 'POST', 
                 body: JSON.stringify({ 
@@ -612,25 +593,6 @@
                     recaptchaToken: token 
                 }) 
             })
-            .then(res => res.json())
-            .then(res => { 
-                if (res.success) { 
-                    loginSuccess(res.user); 
-                } else { 
-                    alert(res.error); 
-                    grecaptcha.reset(); // エラー時はreCAPTCHAを安全にリセット
-                } 
-            })
-            .catch(err => {
-                alert('通信エラーが発生しました。時間を置いて再度お試しください。');
-                grecaptcha.reset();
-            });
-        }
-
-        function saveProfile() {
-            const dName = document.getElementById('edit-display-name').value.trim();
-            const bio = document.getElementById('edit-bio').value.trim();
-            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', username: currentUser.username, display_name: dName, bio: bio, icon_url: currentUser.icon_url }) })
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
