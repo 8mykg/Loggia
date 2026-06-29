@@ -569,7 +569,26 @@
             });
         }
 
-// 🤖 【変える部分】Googleの認証が成功した時に、自動でGASへ通信を飛ばす関数
+// 【検索キーワード】: startRegisterAction
+        // 🤖 【変える部分】非表示reCAPTCHA起動用トリガー（パスワードチェックをしてから起動）
+        function startRegisterAction() {
+            const password = document.getElementById('reg-password').value.trim();
+            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
+
+            if (!password || !passwordConfirm) {
+                alert('パスワードと確認用パスワードの両方を入力してください。');
+                return;
+            }
+            if (password !== passwordConfirm) {
+                alert('パスワードと確認用パスワードが一致しません。もう一度ご確認ください。');
+                return;
+            }
+
+            // パスワードが一致していれば、裏で自動的にreCAPTCHAを実行
+            grecaptcha.execute();
+        }
+
+        // 🤖 【変える部分】Googleの認証が成功した時に、自動でGASへ通信を飛ばす関数
         async function onInvisibleSubmit(token) {
             const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value.trim();
@@ -578,8 +597,7 @@
             let display_name = document.getElementById('reg-display').value.trim() || '新参者';
             let icon_url = 'logo.jpg';
 
-            // 【検索キーワード】: GAS（バックエンド）へデータを送信
-// 📡 GAS（バックエンド）へデータを送信（OPTIONS通信を発生させない検証版）
+            // 📡 GAS（バックエンド）へデータを送信（OPTIONS通信を発生させないシンプルリクエスト版）
             fetch(GAS_API_URL, { 
                 method: 'POST', 
                 body: JSON.stringify({ 
@@ -594,12 +612,19 @@
                 }) 
             })
             .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    currentUser.display_name = dName; currentUser.bio = bio;
-                    localStorage.setItem('loggia_user', JSON.stringify(currentUser));
-                    updateUserUI(); alert('変更を保存しました！'); navigateToPage('timeline');
-                }
+            .then(res => { 
+                if (res.success) { 
+                    loginSuccess(res.user); 
+                } else { 
+                    // 🛡️ 【総監督ルール】原因を直接書かず、エラーコードをそのままポップアップ
+                    alert(res.error); 
+                    grecaptcha.reset(); 
+                } 
+            })
+            .catch(err => {
+                // 🛡️ 【総監督ルール】バグを考慮した共通のエラーコード風メッセージ
+                alert('ERR_CONNECTION_FAILED: 通信エラーが発生しました。');
+                grecaptcha.reset();
             });
         }
 
