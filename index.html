@@ -80,7 +80,7 @@
                 <input type="text" id="reg-display" placeholder="表札の名前" class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded outline-none">
                 <div class="bg-[#15202b] p-3 rounded border border-[#38444d] space-y-3">
                     <input type="file" id="reg-icon-file" accept="image/*" onchange="previewImage(this, 'reg-preview')" class="block w-full text-xs text-gray-400">
-                    <img id="reg-preview" src="logo.png" class="w-12 h-12 rounded-full object-cover hidden">
+                    <img id="reg-preview" src="assets/default_avatar.png" class="w-12 h-12 rounded-full object-cover hidden">
                 </div>
 
                 <div class="flex justify-center">
@@ -635,7 +635,20 @@
             checkSystemMaintenanceAndRoute(); 
         }
         function handleLogout() { if(autoRefreshInterval) clearInterval(autoRefreshInterval); localStorage.removeItem('loggia_user'); location.reload(); }
-        function getAvatarHtml(url, css = "w-10 h-10 rounded-full object-cover") { return `<img src="${url || 'logo.jpg'}" class="${css}" onerror="this.src='logo.jpg'">`; }
+        // ▼ デフォルトアイコン
+        const DEFAULT_ICON_URL = "assets/default_avatar.png";
+
+        // ▼ アバター生成
+        function getAvatarHtml(url, css = "w-10 h-10 rounded-full object-cover") {
+            const avatar = url || DEFAULT_ICON_URL;
+
+            return `
+                <img
+                    src="${avatar}"
+                    class="${css}"
+                    onerror="this.onerror=null;this.src='${DEFAULT_ICON_URL}'">
+            `;
+        }
         
         function updateUserUI() { 
             if (!currentUser) return; 
