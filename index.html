@@ -595,7 +595,7 @@
             const birthday = document.getElementById('reg-birth').value;
             const username = document.getElementById('reg-username').value.trim().replace('@','');
             let display_name = document.getElementById('reg-display').value.trim() || '新参者';
-            let icon_url = 'logo.jpg';
+            let icon_url = 'assets/logo.png';
 
             // 📡 GAS（バックエンド）へデータを送信（OPTIONS通信を発生させないシンプルリクエスト版）
             fetch(GAS_API_URL, { 
