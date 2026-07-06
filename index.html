@@ -20,7 +20,7 @@
         #app-container {
             display: none; /* 判定が終わるまでメイン画面は隠す */
         }
-        /* 画面中央で「Loggia 起動中...」を表示する部屋 */
+        /* 画面中央でローディングを表示する部屋 */
         #global-loading {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -39,7 +39,7 @@
 
 <body>
     <div id="global-loading">
-        <div>Loggia 起動中...</div>
+        <div>Loading...</div>
     </div>
 
     <div id="app-container">
@@ -420,6 +420,12 @@
             .then(res => {
                 if (!isAuto) document.getElementById('timeline-loading').classList.add('hidden');
                 if (res.success) { setSyncStatus(true); renderTimeline(res.data); } 
+                // ── loadTimelineFeed の .then() 内（renderTimeline の直後に1行追記）──
+                if (res.success) {
+                setSyncStatus(true);
+                renderTimeline(res.data);
+                updateViewsForNewPosts(res.data); // ← 追加：未閲覧ポストのViewsをバッチ更新
+                }
                 else { setSyncStatus(false); }
             })
             .catch(() => {
@@ -585,6 +591,9 @@
                         </div>
                     </div>`;
                 container.insertAdjacentHTML('beforeend', postHtml);
+                // ── タイムライン描画処理の末尾（ポスト配列が確定した直後）に追記 ──
+                // posts はタイムラインのポスト配列（各要素に id フィールドがあること）
+                updateViewsForNewPosts(posts);
             });
         }
 
@@ -744,6 +753,47 @@
                 document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
                 document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-[#5999FF] border-[#5999FF]";
             }
+        }
+                // ─────────────────────────────────────────────
+        // Views 重複カウント防止ユーティリティ
+        // sessionStorage でセッション中の閲覧済みポストIDを管理する
+        // （タブを閉じるとリセットされるので次回は正常にカウントされる）
+        // ─────────────────────────────────────────────
+        const VIEWED_POSTS_KEY = "loggia_viewed_posts"; // sessionStorage のキー名
+
+        // sessionStorage から閲覧済みIDの配列を取得する
+        function getViewedPostIds() {
+        const raw = sessionStorage.getItem(VIEWED_POSTS_KEY);
+        return raw ? JSON.parse(raw) : [];
+        }
+
+        // 閲覧済みとして記録する（Set で重複を自動除去）
+        function markPostsAsViewed(postIds) {
+        const viewed = getViewedPostIds();
+        const merged = [...new Set([...viewed, ...postIds])]; // 重複なし配列に統合
+        sessionStorage.setItem(VIEWED_POSTS_KEY, JSON.stringify(merged));
+        }
+
+        // タイムライン表示後に呼び出す
+        // 未閲覧のポストIDだけ抽出してGASにバッチ送信する
+        function updateViewsForNewPosts(posts) {
+        const allIds = posts.map(p => p.id);                        // 表示中の全ID
+        const viewed = getViewedPostIds();
+        const newIds = allIds.filter(id => !viewed.includes(id));   // 未閲覧IDだけ抽出
+
+        // 全部既読なら通信しない（コスト0）
+        if (newIds.length === 0) return;
+
+        // 先にローカルへ記録（通信失敗時の二重カウント防止）
+        markPostsAsViewed(newIds);
+
+        // GASにバッチ送信（fire-and-forget：UXをブロックしない）
+        fetch(GAS_API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "incrementPostViews", postIds: newIds })
+        }).catch(() => {
+            console.warn("ERR_POST_VIEWS_UPDATE_FAILED: Views の更新に失敗しました");
+        });
         }
     </script>
 </body>
