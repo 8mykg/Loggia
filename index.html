@@ -9,8 +9,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
-<body class="font-sans antialiased overflow-x-hidden bg-[#15202b] text-white">
+<body class="app-loading">
+    <style>/* 初回ロード中は画面を表示しない */
+    body.app-loading {
+        visibility: hidden;
+    }
 
+    /* ログイン状態の判定後に表示 */
+    body.app-ready {
+        visibility: visible;
+    }
+    </style>
     <div id="maintenance-gate" class="fixed inset-0 bg-[#15202b] z-50 flex items-center justify-center hidden overflow-y-auto">
         <div class="text-center space-y-6 p-8 max-w-md mx-4 my-auto">
             <div class="text-6xl animate-bounce">🚧</div>
@@ -226,7 +235,10 @@
         window.onload = function() {
             checkSystemMaintenanceAndRoute();
         };
-
+        // 初期表示を開始
+        document.body.classList.remove("app-loading");
+        document.body.classList.add("app-ready");
+        
         function checkSystemMaintenanceAndRoute() {
             const cached = localStorage.getItem('loggia_user');
             let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
