@@ -280,6 +280,7 @@
             checkSystemMaintenanceAndRoute();
         };
 
+        // // 📝 【検索キーワード】: function checkSystemMaintenanceAndRoute()
         function checkSystemMaintenanceAndRoute() {
             const cached = localStorage.getItem('loggia_user');
             let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
@@ -287,7 +288,14 @@
             fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
             .then(res => res.json())
             .then(res => {
+                // // 🚪 【総監督ルール】コードを書く場所は全て記述。GASから返事が来たので、即座にローディングを解除！
+                const loader = document.getElementById('global-loading');
+                const container = document.getElementById('app-container');
+                if (loader) loader.style.display = 'none'; // // ローディング画面を消し去る！
+                if (container) container.style.display = 'block'; // // メイン画面をパッと出す！
+
                 if (cached) currentUser = JSON.parse(cached);
+                // // 📝 この後に続いている、既存の「メンテ画面への分岐」や「画面描画処理」はそのまま100%再利用されます！
                 
                 if (res.maintenance === "ON" && !res.bypass) {
                     document.getElementById('maintenance-gate').classList.remove('hidden');
