@@ -315,14 +315,17 @@
                     document.getElementById('auth-gate').classList.remove('hidden');
                 }
             })
-            .catch(() => {
-                if (cached) { updateUserUI(); applyURLRoute(); startAutoRefresh(); } 
-                else { document.getElementById('auth-gate').classList.remove('hidden'); }
+            // ── checkSystemMaintenanceAndRoute 内の fetch チェーン末尾に追加 ──
+            .catch(err => {
+                // 通信失敗時もローディングを必ず解除する（永久ローディング防止）
+                console.error("ERR_MAINTENANCE_CHECK_FAILED", err);
+                const loader     = document.getElementById('global-loading');
+                const container  = document.getElementById('app-container');
+                if (loader)    loader.style.display    = 'none';
+                if (container) container.style.display = 'block';
+                // 通信できなかった場合は未ログイン扱いで認証画面へ
+                showAuthPage();
             });
-
-            document.getElementById('post-message').oninput = function() {
-                document.getElementById('char-count').innerText = this.value.length + " / 140";
-            };
         }
 
         function toggleAdminEmergencyLogin() {
