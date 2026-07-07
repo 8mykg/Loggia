@@ -640,6 +640,9 @@
                 if (res.success) { loginSuccess(res.user); } 
                 else { alert('ログイン失敗: ' + res.error); }
             });
+            .catch(() => {
+                alert('ログイン失敗: ERR_LOGIN_NETWORK_FAILED'); // 
+            });     
         }
 
 // 【検索キーワード】: startRegisterAction
