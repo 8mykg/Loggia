@@ -261,25 +261,6 @@
         window.onload = function() {
             checkSystemMaintenanceAndRoute();
         };
-                // // 【検索キーワード】: ログイン判定の完了処理周辺
-
-                // // 🚪 判定の通信が終わったので、ローディング画面を消し去り、メイン画面をパッと表示する！
-                const loader = document.getElementById('global-loading');
-                const container = document.getElementById('app-container');
-                
-                if (loader) loader.style.display = 'none';
-                if (container) container.style.display = 'block';
-
-                if (response.success) {
-                    // // すでにログインしている場合の既存のホーム画面描画処理（そのまま再利用）
-                    showHomePage(response.user);
-                } else {
-                    // // 未ログインの場合の既存のサインイン画面表示処理（そのまま再利用）
-                    showAuthPage();
-                }
-            }
-            checkSystemMaintenanceAndRoute();
-        };
 
         // // 📝 【検索キーワード】: function checkSystemMaintenanceAndRoute()
         function checkSystemMaintenanceAndRoute() {
