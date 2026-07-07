@@ -257,9 +257,10 @@
         let autoRefreshInterval = null;
         let currentMaintenanceState = false; 
 
+        // ── 修正後の window.onload（handleLoginCheckResult を削除）──
         window.onload = function() {
-                        // // 📝 GASから「ログインしてないお！」または「ログイン成功したお！」の返事が返ってきた瞬間の部屋
-            function handleLoginCheckResult(response) {
+            checkSystemMaintenanceAndRoute();
+        };
                 // // 【検索キーワード】: ログイン判定の完了処理周辺
 
                 // // 🚪 判定の通信が終わったので、ローディング画面を消し去り、メイン画面をパッと表示する！
@@ -282,8 +283,16 @@
 
         // // 📝 【検索キーワード】: function checkSystemMaintenanceAndRoute()
         function checkSystemMaintenanceAndRoute() {
-            const cached = localStorage.getItem('loggia_user');
-            let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
+            // ── localStorage の読み取りを安全にする（"undefined"文字列対策）──
+            let cached = null;
+            try {
+                const raw = localStorage.getItem('loggia_user');
+                cached = (raw && raw !== "undefined") ? JSON.parse(raw) : null;
+            } catch (e) {
+                // 壊れたキャッシュは無視して未ログイン扱いにする
+                localStorage.removeItem('loggia_user');
+            }
+            let userParam = cached ? `&username=${encodeURIComponent(cached.username)}` : "";
 
             fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
             .then(res => res.json())
@@ -294,8 +303,8 @@
                 if (loader) loader.style.display = 'none'; // // ローディング画面を消し去る！
                 if (container) container.style.display = 'block'; // // メイン画面をパッと出す！
 
-                if (cached) currentUser = JSON.parse(cached);
-                // // 📝 この後に続いている、既存の「メンテ画面への分岐」や「画面描画処理」はそのまま100%再利用されます！
+                // ── 同関数内の cached 参照箇所も統一 ──
+                if (cached) currentUser = cached; // ← JSON.parse不要（上で既にパース済み）
                 
                 if (res.maintenance === "ON" && !res.bypass) {
                     document.getElementById('maintenance-gate').classList.remove('hidden');
@@ -315,16 +324,14 @@
                     document.getElementById('auth-gate').classList.remove('hidden');
                 }
             })
-            // ── checkSystemMaintenanceAndRoute 内の fetch チェーン末尾に追加 ──
-            .catch(err => {
-                // 通信失敗時もローディングを必ず解除する（永久ローディング防止）
+            .catch(function(err) {
                 console.error("ERR_MAINTENANCE_CHECK_FAILED", err);
-                const loader     = document.getElementById('global-loading');
-                const container  = document.getElementById('app-container');
+                const loader    = document.getElementById('global-loading');
+                const container = document.getElementById('app-container');
                 if (loader)    loader.style.display    = 'none';
                 if (container) container.style.display = 'block';
-                // 通信できなかった場合は未ログイン扱いで認証画面へ
-                showAuthPage();
+                // 通信失敗時は auth-gate を直接表示（showAuthPage関数は不要）
+                document.getElementById('auth-gate').classList.remove('hidden');
             });
         }
 
