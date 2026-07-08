@@ -834,6 +834,155 @@
             console.warn("ERR_POST_VIEWS_UPDATE_FAILED: Views の更新に失敗しました");
         });
         }
+        // ─────────────────────────────────────────────
+// 設定画面の初期値を現在のユーザー情報で埋める
+// ─────────────────────────────────────────────
+function initSettingsForm() {
+    if (!currentUser) return;
+    document.getElementById('edit-icon-url').value    = currentUser.icon_url     || '';
+    document.getElementById('edit-username').value    = currentUser.username      || '';
+    document.getElementById('edit-display-name').value = currentUser.display_name || '';
+    document.getElementById('edit-bio').value          = currentUser.bio           || '';
+}
+
+// ─────────────────────────────────────────────
+// プロフィール保存
+// ─────────────────────────────────────────────
+function saveProfile() {
+    if (!currentUser) return;
+
+    const newUsername    = document.getElementById('edit-username').value.trim().replace('@', '');
+    const newDisplayName = document.getElementById('edit-display-name').value.trim();
+    const newBio         = document.getElementById('edit-bio').value.trim();
+    const newIconUrl     = document.getElementById('edit-icon-url').value.trim();
+
+    fetch(GAS_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            action:       'updateProfile',
+            username:     currentUser.username,   // 現在のユーザー名（検索キー）
+            newUsername:  newUsername,            // 新しいユーザー名（変更がない場合も送る）
+            display_name: newDisplayName,
+            bio:          newBio,
+            icon_url:     newIconUrl
+        })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+        if (res.success) {
+            // localStorageとcurrentUserを最新情報に更新
+            currentUser = res.user;
+            localStorage.setItem('loggia_user', JSON.stringify(currentUser));
+            updateUserUI();
+            alert('プロフィールを保存しました！');
+        } else {
+            alert('保存失敗: ' + res.error);
+        }
+    })
+    .catch(function() {
+        alert('保存失敗: ERR_PROFILE_NETWORK_FAILED');
+    });
+}
+
+// ─────────────────────────────────────────────
+// アカウント一時停止モーダル
+// ─────────────────────────────────────────────
+function openStopConfirmModal() {
+    const html = `
+        <h3 class="text-lg font-bold text-amber-400 mb-2">
+            <i class="fas fa-moon mr-2"></i>部屋を休眠状態 (Stop) にしますか？
+        </h3>
+        <p class="text-gray-300 text-sm leading-relaxed mb-4">
+            一時停止すると自動的にログアウトされ、他の住人からは「休眠中の住人」と表示されます。<br>
+            <span class="text-amber-300 font-bold">ログインし直すだけで自動的に部屋を完全復活させることができます。</span>
+        </p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
+            <button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button>
+        </div>`;
+    openCustomModal(html);
+}
+
+// ─────────────────────────────────────────────
+// アカウント完全削除モーダル
+// ─────────────────────────────────────────────
+function openDeleteConfirmModal() {
+    const html = `
+        <h3 class="text-lg font-bold text-red-400 mb-2">
+            <i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）
+        </h3>
+        <p class="text-gray-300 text-sm leading-relaxed mb-4">
+            このボタンを押すと、あなたのユーザーデータおよびすべての投稿が
+            <span class="text-red-400 font-bold underline">データベースから跡形もなく完全物理削除</span>されます。
+            二度と元には戻せません。
+        </p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
+            <button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button>
+        </div>`;
+    openCustomModal(html);
+}
+
+// ─────────────────────────────────────────────
+// ステータス変更送信（Stop）
+// ─────────────────────────────────────────────
+function submitChangeStatus(status) {
+    if (!currentUser) return;
+    closeCustomModal();
+
+    fetch(GAS_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            action:   'changeStatus',
+            username: currentUser.username,
+            status:   status
+        })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+        if (res.success) {
+            // Stop したらログアウト
+            currentUser = null;
+            localStorage.removeItem('loggia_user');
+            location.reload();
+        } else {
+            alert('ステータス変更失敗: ' + res.error);
+        }
+    })
+    .catch(function() {
+        alert('ステータス変更失敗: ERR_STATUS_NETWORK_FAILED');
+    });
+}
+
+    // ─────────────────────────────────────────────
+    // アカウント完全削除送信
+    // ─────────────────────────────────────────────
+    function submitDeleteAccount() {
+        if (!currentUser) return;
+        closeCustomModal();
+
+        fetch(GAS_API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action:   'deleteAccount',
+                username: currentUser.username
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
+            if (res.success) {
+                // 削除完了したらログアウト
+                currentUser = null;
+                localStorage.removeItem('loggia_user');
+                location.reload();
+            } else {
+                alert('削除失敗: ' + res.error);
+            }
+        })
+        .catch(function() {
+            alert('削除失敗: ERR_DELETE_NETWORK_FAILED');
+        });
+    }
     </script>
 </body>
 </html>
