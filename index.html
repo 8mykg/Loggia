@@ -635,22 +635,22 @@
         const textarea = document.getElementById('post-message');
         const message = textarea.value.trim();
         if (!message) return;
-        fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) })
+        fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', userID: currentUser.userID, message: message }) })
         .then(res => res.json())
-        .then(res => { if (res.success) { textarea.value = ''; document.getElementById('char-count').innerText = "0 / 140"; applyURLRoute(); } });
+        .then(res => { if (res.success) { textarea.value = ''; document.getElementById('char-count').innerText = "0 / 10000"; applyURLRoute(); } });
     }
 
     function openReplyModal(postId, username) {
         const html = `
             <h3 class="text-lg font-bold mb-3">@${username} へ返信</h3>
-            <textarea id="modal-reply-msg" placeholder="返信を部屋に響かせる..." class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded-xl h-24 text-white outline-none resize-none"></textarea>
+            <textarea id="modal-reply-msg" placeholder="返信する..." class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded-xl h-24 text-white outline-none resize-none"></textarea>
             <div class="flex justify-end mt-3"><button onclick="submitReply('${postId}')" class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full text-sm">返信を送信</button></div>`;
         openCustomModal(html);
     }
     function submitReply(parentPostId) {
         const message = document.getElementById('modal-reply-msg').value.trim();
         if (!message) return;
-        fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message, reply_to: parentPostId, post_type: 'reply' }) })
+        fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', userID: currentUser.userID, message: message, reply_to: parentPostId, post_type: 'reply' }) })
         .then(() => { closeCustomModal(); applyURLRoute(); });
     }
 
