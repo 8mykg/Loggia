@@ -153,7 +153,7 @@
             </div>
             
             <div class="flex items-center space-x-2 p-2 border border-[#38444d] mt-auto rounded-full bg-[#192734]/20 text-sm">
-                <div id="nav-avatar-container" class="w-8 h-8 flex-shrink-0"></div>
+                <div id="nav-avatar-container" class="w-8 h-8 flex-shrink-0 overflow-hidden rounded-full">
                 <div class="overflow-hidden">
                     <div id="nav-display-name" class="font-bold truncate">ゲスト</div>
                     <div id="nav-username" class="text-gray-400 text-xs truncate">@guest</div>
@@ -710,16 +710,15 @@
         const DEFAULT_ICON_URL = "assets/default_avatar.png";
 
         // ▼ アバター生成
-        function getAvatarHtml(url, css = "w-10 h-10 rounded-full object-cover") {
+        // ── w-10 h-10 → w-full h-full に変更してコンテナに追従させる ──
+        function getAvatarHtml(url, css = "w-full h-full rounded-full object-cover") {
             const avatar = url || DEFAULT_ICON_URL;
-
-        // ── shrink-0 を追加してFlexboxによる縦伸びを防止 ──
-        return `
-            <img
-                src="${avatar}"
-                class="${css} shrink-0"
-                onerror="this.onerror=null;this.src='${DEFAULT_ICON_URL}'">
-        `;
+            return `
+                <img
+                    src="${avatar}"
+                    class="${css}"
+                    onerror="this.onerror=null;this.src='${DEFAULT_ICON_URL}'">
+            `;
         }
         
         function updateUserUI() { 
