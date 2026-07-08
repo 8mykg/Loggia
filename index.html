@@ -188,11 +188,11 @@
                 <div id="timeline-post-box" class="border-b border-[#38444d] p-4 flex space-x-3 bg-[#192734]/10">
                     <div id="form-avatar-container" class="w-12 h-12 flex-shrink-0"></div>
                     <div class="flex-1">
-                        <textarea id="post-message" placeholder="いまどうしてる？" class="w-full bg-transparent text-xl outline-none resize-none h-24 pt-1" maxlength="140"></textarea>
+                        <textarea id="post-message" placeholder="" class="w-full bg-transparent text-xl outline-none resize-none h-24 pt-1" maxlength="140"></textarea>
                         <div class="flex justify-between items-center pt-2 border-t border-[#38444d] mt-2">
                             <span class="text-sm text-gray-500" id="char-count">0 / 140</span>
                             <button id="btn-post-submit" onclick="submitPost()" class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90 flex items-center">
-                                <span>届け！</span>
+                                <span>投稿</span>
                             </button>
                         </div>
                     </div>
@@ -713,12 +713,13 @@
         function getAvatarHtml(url, css = "w-10 h-10 rounded-full object-cover") {
             const avatar = url || DEFAULT_ICON_URL;
 
-            return `
-                <img
-                    src="${avatar}"
-                    class="${css}"
-                    onerror="this.onerror=null;this.src='${DEFAULT_ICON_URL}'">
-            `;
+        // ── shrink-0 を追加してFlexboxによる縦伸びを防止 ──
+        return `
+            <img
+                src="${avatar}"
+                class="${css} shrink-0"
+                onerror="this.onerror=null;this.src='${DEFAULT_ICON_URL}'">
+        `;
         }
         
         function updateUserUI() { 
