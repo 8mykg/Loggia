@@ -221,11 +221,11 @@
 
             <section id="view-admin" class="hidden p-6 space-y-6">
                 <div class="font-bold text-xl mb-4 border-b border-[#38444d] pb-2 text-amber-400">
-                    <i class="fas fa-user-shield mr-2"></i>Loggia 中央統括管理室
+                    <i class="fas fa-user-shield mr-2"></i>Loggiaアドミン設定
                 </div>
                 <div class="bg-[#192734]/40 p-6 rounded-2xl border border-[#38444d] space-y-4">
                     <h3 class="text-lg font-bold text-white flex items-center">
-                        <i class="fas fa-toggle-on mr-2 text-amber-400"></i>一般住人へのメンテナンス画面表示
+                        <i class="fas fa-toggle-on mr-2 text-amber-400"></i>メンテナンス切り替え
                     </h3>
                     <div class="flex items-center space-x-4 pt-2">
                         <div id="admin-maint-status-badge" class="px-4 py-2 rounded-xl font-bold text-sm bg-zinc-800 text-gray-400 border border-[#38444d]">
@@ -728,9 +728,14 @@
             document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人'; 
             document.getElementById('nav-username').innerText = '@' + currentUser.username; 
             
+            // ── Admin ボタンの表示・非表示をロールに応じて切り替え ──
             if (currentUser.role === 'Admin') {
                 document.getElementById('nav-admin-btn').classList.remove('hidden');
                 document.getElementById('nav-admin-btn-mobile').classList.remove('hidden');
+            } else {
+                // Admin以外はボタンを必ず隠す
+                document.getElementById('nav-admin-btn').classList.add('hidden');
+                document.getElementById('nav-admin-btn-mobile').classList.add('hidden');
             }
         }
         
