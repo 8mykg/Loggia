@@ -283,7 +283,11 @@
                 const container = document.getElementById('app-container');
                 if (loader) loader.style.display = 'none'; // // ローディング画面を消し去る！
                 if (container) container.style.display = 'block'; // // メイン画面をパッと出す！
-
+                // ↓ ここを追加（DOMが確実に表示された後に処理を走らせる）
+                if (!document.getElementById('nav-display-name')) {
+                    console.error("ERR_DOM_NOT_READY");
+                    return;
+                }
                 // ── 同関数内の cached 参照箇所も統一 ──
                 if (cached) currentUser = cached; // ← JSON.parse不要（上で既にパース済み）
                 
@@ -723,10 +727,13 @@
         
         function updateUserUI() { 
             if (!currentUser) return; 
+            // ── 要素の存在チェックを追加 ──
+            const navDisplayName = document.getElementById('nav-display-name');
+            if (!navDisplayName) return; // DOM未準備なら即return
+            navDisplayName.innerText = currentUser.display_name || '住人'; // 直接代入に変更
+            document.getElementById('nav-username').innerText = '@' + currentUser.username;
             document.getElementById('nav-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url); 
             document.getElementById('form-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url, "w-12 h-12 rounded-full object-cover"); 
-            document.getElementById('nav-display-name').innerText = currentUser.display_name || '住人'; 
-            document.getElementById('nav-username').innerText = '@' + currentUser.username; 
             
             // ── Admin ボタンの表示・非表示をロールに応じて切り替え ──
             if (currentUser.role === 'Admin') {
