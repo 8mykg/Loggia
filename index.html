@@ -202,18 +202,48 @@
             </section>
 
             <section id="view-settings" class="hidden p-6 space-y-8">
+                <!-- 基本プロフィール設定 -->
                 <div>
-                    <div class="font-bold text-xl mb-6 border-b border-[#38444d] pb-2">設定/Settings</div>
+                    <div class="font-bold text-xl mb-6 border-b border-[#38444d] pb-2">設定 / Settings</div>
                     <div class="space-y-5 max-w-md">
+                        <!-- アイコンURL -->
                         <div>
-                            <label class="block text-gray-400 text-sm mb-1">表示名/Display_Name</label>
-                            <input type="text" id="edit-display-name" class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none">
+                            <label class="block text-gray-400 text-sm mb-1">アイコンURL / Icon URL</label>
+                            <input type="url" id="edit-icon-url" placeholder="https://..." class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none focus:border-[#5999FF]">
                         </div>
+                        <!-- ユーザー名変更 -->
                         <div>
-                            <label class="block text-gray-400 text-sm mb-1">自己紹介/Bio</label>
-                            <textarea id="edit-bio" class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none h-24 resize-none"></textarea>
+                            <label class="block text-gray-400 text-sm mb-1">ユーザー名 / Username <span class="text-amber-400 text-xs">※変更すると投稿者名も全て更新されます</span></label>
+                            <div class="flex items-center bg-[#192734] border border-[#38444d] rounded overflow-hidden">
+                                <span class="text-gray-400 pl-3">@</span>
+                                <input type="text" id="edit-username" class="flex-1 bg-transparent p-2.5 outline-none focus:border-[#5999FF]">
+                            </div>
                         </div>
-                        <button onclick="saveProfile()" class="bg-[#5999FF] text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">保存する/Save</button>
+                        <!-- 表示名 -->
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-1">表示名 / Display Name</label>
+                            <input type="text" id="edit-display-name" class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none focus:border-[#5999FF]">
+                        </div>
+                        <!-- Bio -->
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-1">自己紹介 / Bio</label>
+                            <textarea id="edit-bio" class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none h-24 resize-none focus:border-[#5999FF]"></textarea>
+                        </div>
+                        <button onclick="saveProfile()" class="bg-[#5999FF] text-white font-bold px-6 py-2.5 rounded-full cursor-pointer hover:opacity-90">保存する / Save</button>
+                    </div>
+                </div>
+
+                <!-- 危機管理セクション -->
+                <div class="pt-6 border-t border-red-900/40 max-w-md">
+                    <div class="font-bold text-xl text-red-400 mb-2">危機管理・アカウント設定</div>
+                    <p class="text-gray-400 text-xs mb-4">Loggiaからの一時離脱、または全データの抹消を自分自身の意志で行えます。</p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="openStopConfirmModal()" class="bg-amber-600/20 text-amber-400 border border-amber-500/30 font-bold px-4 py-2.5 rounded-xl hover:bg-amber-600/40 cursor-pointer text-sm">
+                            <i class="fas fa-moon mr-2"></i>アカウントを一時停止 / AccountStop
+                        </button>
+                        <button onclick="openDeleteConfirmModal()" class="bg-red-600/20 text-red-400 border border-red-500/30 font-bold px-4 py-2.5 rounded-xl hover:bg-red-600/40 cursor-pointer text-sm">
+                            <i class="fas fa-trash-alt mr-2"></i>全データを完全削除 / AllDelete
+                        </button>
                     </div>
                 </div>
             </section>
