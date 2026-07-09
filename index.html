@@ -220,7 +220,7 @@
                                         <i class="fas fa-upload mr-2"></i>デバイスから選択
                                         <input type="file" id="edit-icon-file" accept="image/*" onchange="previewIcon(this)" class="hidden">
                                     </label>
-                                    <p class="text-gray-500 text-xs text-center">推奨：正方形・5MB以下</p>
+                                    <p class="text-gray-500 text-xs text-center">推奨：1:1・5MB以下</p>
                                 </div>
                             </div>
                         </div>
@@ -661,7 +661,7 @@
         openCustomModal(html);
     }
     function submitRepost(targetPostId) {
-        fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: '', repost_of: targetPostId, post_type: 'repost' }) })
+        fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', userID: currentUser.userID, message: '', repost_of: targetPostId, post_type: 'repost' }) })
         .then(() => { closeCustomModal(); applyURLRoute(); });
     }
 
@@ -806,7 +806,7 @@
             document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-[#5999FF] border-[#5999FF]";
         }
     }
-            // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────
     // Views 重複カウント防止ユーティリティ
     // sessionStorage でセッション中の閲覧済みポストIDを管理する
     // （タブを閉じるとリセットされるので次回は正常にカウントされる）
@@ -890,6 +890,7 @@
             method: 'POST',
             body: JSON.stringify({
                 action:       'updateProfile',
+                userID: currentUser.userID,
                 username:     currentUser.username,   // 現在のユーザー名（検索キー）
                 newUsername:  newUsername,            // 新しいユーザー名（変更がない場合も送る）
                 display_name: newDisplayName,
@@ -999,7 +1000,7 @@
                 method: 'POST',
                 body: JSON.stringify({
                     action:   'deleteAccount',
-                    username: currentUser.username
+                    userID: currentUser.userID
                 })
             })
             .then(function(res) { return res.json(); })
