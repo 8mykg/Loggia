@@ -489,19 +489,56 @@
                 const page = params.get('page') || 'timeline';
                 const id = params.get('id');
                 // ─────────────────────────────────────────────
-                // URLルーティング処理（view-adminの存在チェック安全弁）
+                // URLルーティング処理（すべてのclassList操作を安全化）
                 // ─────────────────────────────────────────────
                 function applyURLRoute() {
-                    // 【検索キーワード】: document.getElementById('view-admin')
+                // ─────────────────────────────────────────────
+                // URLルーティング処理（条件分岐・UI操作の完全安全化版）
+                // ─────────────────────────────────────────────
+                // 一旦すべてを非表示にするフェーズ（要素が存在する場合のみ実行）
+                const viewTimeline = document.getElementById('view-timeline');
+                if (viewTimeline) viewTimeline.classList.add('hidden');
 
-                    // 🛡️ 494行目のクラッシュ対策：要素がHTML上に存在するときだけhiddenを追加する
-                    const viewAdmin = document.getElementById('view-admin');
-                    if (viewAdmin) {
-                        viewAdmin.classList.add('hidden');
-                    }
+                const viewSettings = document.getElementById('view-settings');
+                if (viewSettings) viewSettings.classList.add('hidden');
 
-                    // 📝 この後にある他の画面要素（view-homeやview-authなど）の操作に続きます
-                }
+                const viewAdmin = document.getElementById('view-admin');
+                if (viewAdmin) viewAdmin.classList.add('hidden');
+
+                const profileCardArea = document.getElementById('profile-card-area');
+                if (profileCardArea) profileCardArea.classList.add('hidden');
+
+                const globalBackBtn = document.getElementById('global-back-btn');
+                if (globalBackBtn) globalBackBtn.classList.add('hidden');
+
+                const timelinePostBox = document.getElementById('timeline-post-box');
+                if (timelinePostBox) timelinePostBox.classList.remove('hidden');
+
+                const feedHeaderTitle = document.getElementById('feed-header-title');
+                if (feedHeaderTitle) feedHeaderTitle.innerText = "Loggia の「今」";
+
+                // 各ページパラメータ（page）に応じた個別表示フェーズ
+                if (page === 'timeline') {
+                    if (viewTimeline) viewTimeline.classList.remove('hidden');
+                    loadTimelineFeed();
+                } else if (page === 'profile' && id) {
+                    if (viewTimeline) viewTimeline.classList.remove('hidden');
+                    if (timelinePostBox) timelinePostBox.classList.add('hidden');
+                    if (globalBackBtn) globalBackBtn.classList.remove('hidden');
+                    renderProfileCard(id);
+                } else if (page === 'post' && id) {
+                    if (viewTimeline) viewTimeline.classList.remove('hidden');
+                    if (globalBackBtn) globalBackBtn.classList.remove('hidden');
+                    if (feedHeaderTitle) feedHeaderTitle.innerText = "つぶやきの詳細";
+                    loadSinglePost(id);
+                } else if (page === 'settings') {
+                    if (viewSettings) viewSettings.classList.remove('hidden');
+                    initSettingsForm();
+                } else if (page === 'admin' && currentUser?.role === 'Admin') {
+                    if (viewAdmin) viewAdmin.classList.remove('hidden');
+                } else {
+                    navigateToPage('timeline');
+                }}
                 document.getElementById('view-timeline').classList.add('hidden');
                 document.getElementById('view-settings').classList.add('hidden');
                 document.getElementById('view-admin').classList.add('hidden');
