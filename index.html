@@ -424,6 +424,24 @@
     document.getElementById('global-back-btn').classList.add('hidden');
     document.getElementById('timeline-post-box').classList.remove('hidden');
     document.getElementById('feed-header-title').innerText = "Loggia の「今」";
+    // ─────────────────────────────────────────────
+    // URLルーティング処理（classListのnullクラッシュ防止版）
+    // ─────────────────────────────────────────────
+    function applyURLRoute() {
+        // 【検索キーワード】: 422行目周辺の .classList 操作部分
+
+        // 例として、特定の要素（targetElement）を取得して操作している箇所
+        // 総監督の実際のコードにある変数名（maintPage や adminSection など）に書き換えてください
+        const element = document.getElementById('view-admin');
+
+        // 🛡️ 安全弁：要素が画面上に存在する場合のみ classList を操作する条件式を追加
+        if (element) {
+            element.classList.add('hidden'); // または remove など
+        } else {
+            // 要素が見つからなくてもクラッシュさせずにログだけ残してスルーする
+            console.warn("Loggia_Route_Debug: classListを操作しようとした要素が存在しませんでした");
+        }
+    }
 
     if (page === 'timeline') {
     document.getElementById('view-timeline').classList.remove('hidden');
