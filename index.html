@@ -311,6 +311,43 @@
     fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
     .then(res => res.json())
     .then(res => {
+    // ─────────────────────────────────────────────
+    // メンテナンス確認および画面遷移制御（デバッグログ強化版）
+    // ─────────────────────────────────────────────
+    function checkSystemMaintenanceAndRoute() {
+        const cached = localStorage.getItem('loggia_user');
+        let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
+
+        // 検証ログ1: ローカルストレージの中身を確認
+        console.log("Loggia_Route_Debug: cached_user =", cached);
+
+        fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
+        .then(res => res.json())
+        .then(res => {
+            // 検証ログ2: GASから返ってきたシステム状態とメンテ状態を確認
+            console.log("Loggia_Route_Debug: GAS_Response =", res);
+
+            const loader = document.getElementById('global-loading');
+            const container = document.getElementById('app-container');
+            if (loader) loader.style.display = 'none';
+            if (container) container.style.display = 'block';
+
+            // ⚠️ ここから下の既存のif文（画面分岐）の条件式をチェックしてください
+            // もしGAS側がメンテ中でないと判定しているにもかかわらずログイン画面に戻る場合、
+            // 以下の「cached（ローカルストレージ）」の有無や、変数 currentUser への代入処理で脱線しています
+            if (cached) {
+                currentUser = JSON.parse(cached);
+                
+                // 例: 既存のホーム画面描画関数（実際の関数名に合わせてください）
+                // showHomePage(currentUser); 
+                console.log("Loggia_Route_Debug: ログイン中としてホーム画面を描画します");
+            } else {
+                // ローカルストレージが空、またはパースに失敗した場合にここへ落ちます
+                // showAuthPage();
+                console.warn("Loggia_Route_Debug: ユーザーデータがないためログイン画面へ強制移行しました");
+            }
+        });
+    }
     // // 🚪 【総監督ルール】コードを書く場所は全て記述。GASから返事が来たので、即座にローディングを解除！
     const loader = document.getElementById('global-loading');
     const container = document.getElementById('app-container');
@@ -503,24 +540,41 @@
     }
     }
 
-    function toggleMaintenanceMode() {
-    if (!currentUser || currentUser.role !== 'Admin') return;
-    const targetState = currentMaintenanceState ? "OFF" : "ON";
-    const btn = document.getElementById('btn-toggle-maint');
-    btn.disabled = true; btn.style.opacity = "0.5";
+    // ─────────────────────────────────────────────
+    // メンテナンス状態の通信とバッジ表示の更新
+    // ─────────────────────────────────────────────
+    function executeToggleMaintenance(checkbox) {
+        const isEnabled = checkbox.checked;
+        const badge = document.getElementById('maint-status-badge');
 
-    fetch(GAS_API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'toggleMaintenance', username: currentUser.username, state: targetState })
-    })
-    .then(res => res.json())
-    .then(res => {
-    if(res.success) {
-    currentMaintenanceState = (targetState === "ON");
-    updateAdminPanelUI();
-    } else { alert("変更失敗/Change failed: " + res.error); }
-    })
-    .finally(() => { btn.disabled = false; btn.style.opacity = "1"; });
+        fetch(GAS_API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'toggleMaintenance',
+                enabled: isEnabled
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
+            if (res.success) {
+                if (badge) {
+                    if (res.maintenance === "ON") {
+                        badge.className = "text-xs px-2.5 py-1 rounded-full bg-red-500/20 text-red-400 font-normal";
+                        badge.innerText = "通行止め中 (ON)";
+                    } else {
+                        badge.className = "text-xs px-2.5 py-1 rounded-full bg-green-500/20 text-green-400 font-normal";
+                        badge.innerText = "稼働中 (OFF)";
+                    }
+                }
+            } else {
+                alert('設定の反映に失敗しました: ' + res.error);
+                checkbox.checked = !isEnabled;
+            }
+        })
+        .catch(function() {
+            alert('通信に失敗しました: ERR_MAINTENANCE_NETWORK_FAILED');
+            checkbox.checked = !isEnabled;
+        });
     }
 
     function setSyncStatus(isOnline) {
