@@ -1204,7 +1204,7 @@
                     <p class="text-gray-400 text-xs leading-relaxed break-all bg-zinc-900/60 p-3 rounded-xl border border-[#38444d]">
                         移動先: <span class="text-blue-400 underline">${url}</span>
                     </p>
-                    <p class="text-gray-500 text-[11px]">知らない人が貼ったURLや、ログインを促す怪しいサイトには十分ご注意ください。/Be careful of untrustworthy websites.</p>
+                    <p class="text-gray-500 text-[11px]">信用できないURLや、ログインを促すサイトには注意してください。/Be careful of untrustworthy websites.</p>
                     <div class="flex justify-center space-x-3 pt-2">
                         <button onclick="closeCustomModal()" class="bg-zinc-800 text-gray-300 px-5 py-2 rounded-full text-xs font-bold cursor-pointer hover:text-white transition">ここに残る/return</button>
                         <a href="${url}" target="_blank" rel="noopener noreferrer" onclick="closeCustomModal()" class="bg-blue-500 text-white px-5 py-2 rounded-full text-xs font-bold hover:opacity-90 transition inline-block">外に出る/Go</a>
@@ -1280,7 +1280,7 @@
         function openReplyModal(postId, username) {
             const html = `
                 <h3 class="text-lg font-bold mb-3">@${username} へ返信</h3>
-                <textarea id="modal-reply-msg" placeholder="返信を部屋に響かせる..." class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded-xl h-24 text-white outline-none resize-none"></textarea>
+                <textarea id="modal-reply-msg" placeholder="返信する..." class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded-xl h-24 text-white outline-none resize-none"></textarea>
                 <div class="flex justify-end mt-3"><button onclick="submitReply('${postId}')" class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full text-sm">返信を送信</button></div>`;
             openCustomModal(html);
         }
