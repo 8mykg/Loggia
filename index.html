@@ -255,24 +255,21 @@
                 </div>
             </section>
 
-            <section id="view-admin" class="hidden p-6 space-y-6">
-                <div class="font-bold text-xl mb-4 border-b border-[#38444d] pb-2 text-amber-400">
-                    <i class="fas fa-user-shield mr-2"></i>Loggia設定/Loggia.settings
+            <div class="bg-[#192734] border border-[#38444d] rounded-lg p-5 max-w-md mx-auto mt-6">
+                <h3 class="text-white font-bold text-lg mb-2 flex items-center justify-between">
+                    <span>システムメンテナンス管理</span>
+                    <span id="maint-status-badge" class="text-xs px-2.5 py-1 rounded-full bg-green-500/20 text-green-400 font-normal">稼働中 (OFF)</span>
+                </h3>
+                <p class="text-gray-400 text-sm mb-4">有効にすると、一般ユーザーは通行止め画面にリダイレクトされ、Loggiaの利用ができなくなります。</p>
+                
+                <div class="flex items-center justify-between border-t border-[#38444d] pt-4">
+                    <span class="text-white font-medium">一般ユーザーを通行止めにする</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="maint-toggle-switch" class="sr-only peer" onchange="executeToggleMaintenance(this)">
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5999FF]"></div>
+                    </label>
                 </div>
-                <div class="bg-[#192734]/40 p-6 rounded-2xl border border-[#38444d] space-y-4">
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <i class="fas fa-toggle-on mr-2 text-amber-400"></i>メンテナンス切り替え/Maintenance.Switch
-                    </h3>
-                    <div class="flex items-center space-x-4 pt-2">
-                        <div id="admin-maint-status-badge" class="px-4 py-2 rounded-xl font-bold text-sm bg-zinc-800 text-gray-400 border border-[#38444d]">
-                            読み込み中...Loading
-                        </div>
-                        <button id="btn-toggle-maint" onclick="toggleMaintenanceMode()" class="bg-[#5999FF] text-white font-bold px-6 py-2 rounded-full text-sm cursor-pointer shadow hover:opacity-90">
-                            設定を切り替える/Switch.Settings
-                        </button>
-                    </div>
-                </div>
-            </section>
+            </div>
         </main>
     </div>
 
@@ -469,7 +466,7 @@
     .then(res => {
     if (res.success) {
     const u = res.user;
-    document.getElementById('feed-header-title').innerText = `${u.display_name} の部屋`;
+    document.getElementById('feed-header-title').innerText = `${u.display_name} のプロフィール`;
     document.getElementById('prof-card-avatar').innerHTML = getAvatarHtml(u.icon_url, "w-20 h-20 rounded-full object-cover border-2 border-zinc-700");
     document.getElementById('prof-card-display').innerText = u.display_name;
     document.getElementById('prof-card-username').innerText = `@${u.username}`;
