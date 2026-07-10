@@ -206,10 +206,17 @@
                 <div>
                     <div class="font-bold text-xl mb-6 border-b border-[#38444d] pb-2">設定 / Settings</div>
                     <div class="space-y-5 max-w-md">
-                        <!-- アイコンURL -->
                         <div>
-                            <label class="block text-gray-400 text-sm mb-1">アイコンURL / Icon URL</label>
-                            <input type="url" id="edit-icon-url" placeholder="https://..." class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none focus:border-[#5999FF]">
+                            <label class="block text-gray-400 text-sm mb-1">アイコン画像 / Icon Image</label>
+                            <div class="flex items-center gap-4">
+                                <img id="edit-icon-preview" src="assets/default_avatar.png" class="w-12 h-12 rounded-full object-cover border border-[#38444d] bg-[#192734]">
+                                
+                                <label for="edit-icon-file" class="cursor-pointer bg-[#5999FF] text-white px-4 py-2 rounded text-sm font-bold hover:bg-[#4685E6] transition-colors">
+                                    画像を選択
+                                </label>
+                                <input type="file" id="edit-icon-file" accept="image/*" style="display: none;" onchange="handleIconFileSelect(this)">
+                            </div>
+                            <input type="hidden" id="edit-icon-url" value="">
                         </div>
                         <!-- ユーザー名変更 -->
                         <div>
@@ -699,7 +706,7 @@
     const birthday = document.getElementById('reg-birth').value;
     const username = document.getElementById('reg-username').value.trim().replace('@','');
     let display_name = document.getElementById('reg-display').value.trim() || '新参者';
-    let icon_url = 'assets/logo.png';
+    let icon_url = 'assets/default_avatar.png';
 
     // 📡 GAS（バックエンド）へデータを送信（OPTIONS通信を発生させないシンプルリクエスト版）
     fetch(GAS_API_URL, { 
@@ -883,7 +890,36 @@
     alert('保存失敗: ERR_PROFILE_NETWORK_FAILED');
     });
     }
+    // // ────────── 【ファイル名: index.html】 【関数名: handleIconFileSelect】 ──────────
+    // // 【総監督ルール】コードを書く場所は全て記述。画像が選ばれたらプレビューを切り替え、データを隠し部屋へパッキング！
+    function handleIconFileSelect(inputElement) {
+        const file = inputElement.files[0];
+        const previewImage = document.getElementById('edit-icon-preview');
+        const hiddenInput = document.getElementById('edit-icon-url');
 
+        // // ファイルが選択されていなければ何もせず帰る安全弁
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64String = e.target.result;
+
+            // // 1. 横に配置したプレビュー画像の src を、今選んだ画像にパッと切り替える！
+            if (previewImage) {
+                previewImage.src = base64String;
+            }
+            // // 2. Claudeの saveProfile() が読みに行く予定の隠し部屋に、画像データを置いておく！
+            if (hiddenInput) {
+                hiddenInput.value = base64String;
+            }
+        };
+        reader.onerror = function() {
+            console.error("ERR_INDEX_PREVIEW_READ_FAILED");
+        };
+
+        // // 翻訳ミラクル実行トリガー
+        reader.readAsDataURL(file);
+    }
     // ─────────────────────────────────────────────
     // アカウント一時停止モーダル
     // ─────────────────────────────────────────────
