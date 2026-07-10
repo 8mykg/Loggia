@@ -206,8 +206,9 @@
                 <div>
                     <div class="font-bold text-xl mb-6 border-b border-[#38444d] pb-2">設定 / Settings</div>
                     <div class="space-y-5 max-w-md">
-                        <!-- アイコン変更 -->
+                        <!-- アイコンURL -->
                         <div>
+<<<<<<< HEAD
                             <label class="block text-gray-400 text-sm mb-1">アイコン / Icon</label>
                             <div class="flex items-center gap-4">
                                 <!-- 現在のアイコンプレビュー -->
@@ -223,6 +224,10 @@
                                     <p class="text-gray-500 text-xs text-center">推奨：1:1・5MB以下</p>
                                 </div>
                             </div>
+=======
+                            <label class="block text-gray-400 text-sm mb-1">アイコンURL / Icon URL</label>
+                            <input type="url" id="edit-icon-url" placeholder="https://..." class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none focus:border-[#5999FF]">
+>>>>>>> parent of 7c6630b (Update index.html)
                         </div>
                         <!-- ユーザー名変更 -->
                         <div>
@@ -290,15 +295,16 @@
         <button onclick="handleLogout()" class="text-2xl text-red-400/60 focus:text-red-400 px-3 py-1 cursor-pointer"><i class="fas fa-sign-out-alt"></i></button>
     </footer>
 
-<script>
-    // 🌐 Loggia バックエンド連携設定
-    // ⚠️ 注意: 権限を許可した後に新バージョンで発行された最新のGASのURLを貼り付けてください
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwNhs10Pab7U6befEDM1b8WqTZSbD176BrkVMjXL1F4o2QcOQua1ZfRj1GxD0-G2mp0/exec';
+    <script>
+        // 🌐 Loggia バックエンド連携設定
+        // ⚠️ 注意: 権限を許可した後に新バージョンで発行された最新のGASのURLを貼り付けてください
+        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwNhs10Pab7U6befEDM1b8WqTZSbD176BrkVMjXL1F4o2QcOQua1ZfRj1GxD0-G2mp0/exec';
 
-    let currentUser = null;
-    let autoRefreshInterval = null;
-    let currentMaintenanceState = false; 
+        let currentUser = null;
+        let autoRefreshInterval = null;
+        let currentMaintenanceState = false; 
 
+<<<<<<< HEAD
     // ── 修正後の window.onload（handleLoginCheckResult を削除）──
     window.onload = function() {
         checkSystemMaintenanceAndRoute();
@@ -912,82 +918,706 @@
                 alert('プロフィールを保存しました！');
             } else {
                 alert('保存失敗: ' + res.error);
+=======
+        // ── 修正後の window.onload（handleLoginCheckResult を削除）──
+        window.onload = function() {
+            checkSystemMaintenanceAndRoute();
+        };
+
+        // // 📝 【検索キーワード】: function checkSystemMaintenanceAndRoute()
+        function checkSystemMaintenanceAndRoute() {
+            // ── localStorage の読み取りを安全にする（"undefined"文字列対策）──
+            let cached = null;
+            try {
+                const raw = localStorage.getItem('loggia_user');
+                cached = (raw && raw !== "undefined") ? JSON.parse(raw) : null;
+            } catch (e) {
+                // 壊れたキャッシュは無視して未ログイン扱いにする
+                localStorage.removeItem('loggia_user');
+>>>>>>> parent of 7c6630b (Update index.html)
             }
-        })
-        .catch(function() {
-            alert('保存失敗: ERR_PROFILE_NETWORK_FAILED');
+            let userParam = cached ? `&username=${encodeURIComponent(cached.username)}` : "";
+
+            fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
+            .then(res => res.json())
+            .then(res => {
+                // // 🚪 【総監督ルール】コードを書く場所は全て記述。GASから返事が来たので、即座にローディングを解除！
+                const loader = document.getElementById('global-loading');
+                const container = document.getElementById('app-container');
+                if (loader) loader.style.display = 'none'; // // ローディング画面を消し去る！
+                if (container) container.style.display = 'block'; // // メイン画面をパッと出す！
+                // ↓ ここを追加（DOMが確実に表示された後に処理を走らせる）
+                if (!document.getElementById('nav-display-name')) {
+                    console.error("ERR_DOM_NOT_READY");
+                    return;
+                }
+                // ── 同関数内の cached 参照箇所も統一 ──
+                if (cached) currentUser = cached; // ← JSON.parse不要（上で既にパース済み）
+                
+                if (res.maintenance === "ON" && !res.bypass) {
+                    document.getElementById('maintenance-gate').classList.remove('hidden');
+                    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+                    return;
+                }
+                
+                document.getElementById('maintenance-gate').classList.add('hidden');
+                currentMaintenanceState = (res.maintenance === "ON");
+                updateAdminPanelUI();
+
+                if (cached) {
+                    updateUserUI();
+                    applyURLRoute();
+                    startAutoRefresh();
+                } else {
+                    document.getElementById('auth-gate').classList.remove('hidden');
+                }
+            })
+            .catch(function(err) {
+                console.error("ERR_MAINTENANCE_CHECK_FAILED", err);
+                const loader    = document.getElementById('global-loading');
+                const container = document.getElementById('app-container');
+                if (loader)    loader.style.display    = 'none';
+                if (container) container.style.display = 'block';
+                // 通信失敗時は auth-gate を直接表示（showAuthPage関数は不要）
+                document.getElementById('auth-gate').classList.remove('hidden');
+            });
+        }
+
+        function toggleAdminEmergencyLogin() {
+            const box = document.getElementById('admin-emergency-box');
+            box.classList.toggle('hidden');
+        }
+
+        function executeAdminEmergencyLogin() {
+            const email = document.getElementById('maint-admin-email').value.trim();
+            const password = document.getElementById('maint-admin-password').value.trim();
+            if (!email || !password) return;
+
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', email, password }) })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && res.user.role === 'Admin') {
+                    localStorage.setItem('loggia_user', JSON.stringify(res.user));
+                    location.reload(); 
+                } else {
+                    alert('管理者として認証されませんでした。/You are not an administrator.');
+                }
+            });
+        }
+
+        function applyURLRoute() {
+            const params = new URLSearchParams(window.location.search);
+            const page = params.get('page') || 'timeline';
+            const id = params.get('id');
+
+            document.getElementById('view-timeline').classList.add('hidden');
+            document.getElementById('view-settings').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            document.getElementById('profile-card-area').classList.add('hidden');
+            document.getElementById('global-back-btn').classList.add('hidden');
+            document.getElementById('timeline-post-box').classList.remove('hidden');
+            document.getElementById('feed-header-title').innerText = "Loggia の「今」";
+
+            if (page === 'timeline') {
+                document.getElementById('view-timeline').classList.remove('hidden');
+                loadTimelineFeed();
+            } else if (page === 'profile' && id) {
+                document.getElementById('view-timeline').classList.remove('hidden');
+                document.getElementById('timeline-post-box').classList.add('hidden');
+                document.getElementById('global-back-btn').classList.remove('hidden');
+                renderProfileCard(id);
+            } else if (page === 'post' && id) {
+                document.getElementById('view-timeline').classList.remove('hidden');
+                document.getElementById('global-back-btn').classList.remove('hidden');
+                document.getElementById('feed-header-title').innerText = "つぶやきの詳細";
+                loadSinglePost(id);
+            } else if (page === 'settings') {
+                document.getElementById('view-settings').classList.remove('hidden');
+                initSettingsForm();
+            } else if (page === 'admin' && currentUser?.role === 'Admin') {
+                document.getElementById('view-admin').classList.remove('hidden');
+            } else {
+                navigateToPage('timeline');
+            }
+        }
+
+        function navigateToPage(pageName, id = null) {
+            let newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            let query = `?page=${pageName}`;
+            if (id) query += `&id=${id}`;
+            window.history.pushState({ path: newUrl + query }, '', newUrl + query);
+            applyURLRoute();
+        }
+
+        function startAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(() => {
+                const params = new URLSearchParams(window.location.search);
+                const page = params.get('page') || 'timeline';
+                if (page === 'timeline' || page === 'profile' || page === 'post') {
+                    if (page === 'timeline') loadTimelineFeed(true);
+                    if (page === 'profile') loadTimelineFeed(true, params.get('id'), null);
+                    if (page === 'post') loadTimelineFeed(true, null, params.get('id'));
+                }
+            }, 12000);
+        }
+
+        function loadTimelineFeed(isAuto = false, targetUser = null, targetPostId = null) {
+            if (!currentUser) return;
+            if (!isAuto) document.getElementById('timeline-loading').classList.remove('hidden');
+            
+            let url = `${GAS_API_URL}?action=getTimeline&username=${currentUser.username}&isAutoRefresh=${isAuto}`;
+            if (targetUser) url += `&targetUser=${targetUser}`;
+            if (targetPostId) url += `&targetPostId=${targetPostId}`;
+
+            fetch(url)
+            .then(res => res.json())
+            .then(res => {
+                if (!isAuto) document.getElementById('timeline-loading').classList.add('hidden');
+                if (res.success) { setSyncStatus(true); renderTimeline(res.data); } 
+                // ── loadTimelineFeed の .then() 内（renderTimeline の直後に1行追記）──
+                if (res.success) {
+                setSyncStatus(true);
+                renderTimeline(res.data);
+                updateViewsForNewPosts(res.data); // ← 追加：未閲覧ポストのViewsをバッチ更新
+                }
+                else { setSyncStatus(false); }
+            })
+            .catch(() => {
+                if (!isAuto) document.getElementById('timeline-loading').classList.add('hidden');
+                setSyncStatus(false);
+            });
+        }
+
+        function renderProfileCard(username) {
+            document.getElementById('timeline-posts').innerHTML = '';
+            fetch(`${GAS_API_URL}?action=getUserProfile&targetUser=${username}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    const u = res.user;
+                    document.getElementById('feed-header-title').innerText = `${u.display_name} の部屋`;
+                    document.getElementById('prof-card-avatar').innerHTML = getAvatarHtml(u.icon_url, "w-20 h-20 rounded-full object-cover border-2 border-zinc-700");
+                    document.getElementById('prof-card-display').innerText = u.display_name;
+                    document.getElementById('prof-card-username').innerText = `@${u.username}`;
+                    document.getElementById('prof-card-bio').innerText = u.bio || 'まだ自己紹介が書かれていません。/No self-introduction is provided.';
+                    
+                    const badge = document.getElementById('prof-card-badge');
+                    badge.className = u.status === 'Active' ? "px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/20" : "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                    badge.innerText = u.status === 'Active' ? "アクティブユーザー/Active.User" : "休眠中/Stop or Ban";
+                    
+                    document.getElementById('profile-card-area').classList.remove('hidden');
+                    loadTimelineFeed(false, username, null);
+                }
+            });
+        }
+
+        function loadSinglePost(postId) {
+            loadTimelineFeed(false, null, postId);
+        }
+
+        function initSettingsForm() {
+            document.getElementById('edit-display-name').value = currentUser.display_name || ''; 
+            document.getElementById('edit-bio').value = currentUser.bio || ''; 
+        }
+
+        function updateAdminPanelUI() {
+            const badge = document.getElementById('admin-maint-status-badge');
+            if(!badge) return;
+            if (currentMaintenanceState) {
+                badge.className = "px-4 py-2 rounded-xl font-bold text-sm bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse";
+                badge.innerHTML = "<i class='fas fa-exclamation-triangle mr-1'></i> メンテナンス中/Under maintenance";
+            } else {
+                badge.className = "px-4 py-2 rounded-xl font-bold text-sm bg-green-500/10 text-green-400 border border-green-500/20";
+                badge.innerHTML = "<i class='fas fa-check-circle mr-1'></i> 通常稼働中/Currently operating normally.";
+            }
+        }
+
+        function toggleMaintenanceMode() {
+            if (!currentUser || currentUser.role !== 'Admin') return;
+            const targetState = currentMaintenanceState ? "OFF" : "ON";
+            const btn = document.getElementById('btn-toggle-maint');
+            btn.disabled = true; btn.style.opacity = "0.5";
+
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'toggleMaintenance', username: currentUser.username, state: targetState })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success) {
+                    currentMaintenanceState = (targetState === "ON");
+                    updateAdminPanelUI();
+                } else { alert("変更失敗/Change failed: " + res.error); }
+            })
+            .finally(() => { btn.disabled = false; btn.style.opacity = "1"; });
+        }
+
+        function setSyncStatus(isOnline) {
+            const statusEl = document.getElementById('sync-status');
+            const dotEl = document.getElementById('sync-dot');
+            const textEl = document.getElementById('sync-text');
+            if (isOnline) {
+                statusEl.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20";
+                dotEl.className = "w-1.5 h-1.5 mr-1.5 bg-green-400 rounded-full";
+                textEl.innerText = "自動同期中/Synchronizing";
+            } else {
+                statusEl.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
+                dotEl.className = "w-1.5 h-1.5 mr-1.5 bg-red-400 rounded-full";
+                textEl.innerText = "同期不可/Not syncable";
+            }
+        }
+
+        function openCustomModal(htmlContent) {
+            const container = document.getElementById('modal-container');
+            document.getElementById('modal-content-area').innerHTML = htmlContent;
+            container.classList.remove('hidden');
+            setTimeout(() => container.classList.add('opacity-100'), 10);
+        }
+        function closeCustomModal() {
+            const container = document.getElementById('modal-container');
+            container.classList.remove('opacity-100');
+            setTimeout(() => { container.classList.add('hidden'); }, 200);
+        }
+
+        function confirmExternalLink(url) {
+            const html = `
+                <div class="text-center space-y-4 py-2">
+                    <div class="text-4xl text-amber-400"><i class="fas fa-exclamation-circle"></i></div>
+                    <h3 class="text-lg font-bold text-white">Loggiaの外へ出かけますか？/Do you want to go to this URL?</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed break-all bg-zinc-900/60 p-3 rounded-xl border border-[#38444d]">
+                        移動先: <span class="text-blue-400 underline">${url}</span>
+                    </p>
+                    <p class="text-gray-500 text-[11px]">知らない人が貼ったURLや、ログインを促す怪しいサイトには十分ご注意ください。/Be careful of untrustworthy websites.</p>
+                    <div class="flex justify-center space-x-3 pt-2">
+                        <button onclick="closeCustomModal()" class="bg-zinc-800 text-gray-300 px-5 py-2 rounded-full text-xs font-bold cursor-pointer hover:text-white transition">ここに残る/return</button>
+                        <a href="${url}" target="_blank" rel="noopener noreferrer" onclick="closeCustomModal()" class="bg-blue-500 text-white px-5 py-2 rounded-full text-xs font-bold hover:opacity-90 transition inline-block">外に出る/Go</a>
+                    </div>
+                </div>`;
+            openCustomModal(html);
+        }
+
+        function renderTimeline(posts) {
+            const container = document.getElementById('timeline-posts');
+            container.innerHTML = '';
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-gray-500">表示できる投稿はありません。/There are no posts.</div>';
+                return;
+            }
+            posts.forEach(post => {
+                const avatarHtml = `<div onclick="navigateToPage('profile', '${post.username}')" class="cursor-pointer hover:opacity-80 transition">${getAvatarHtml(post.icon_url, "w-11 h-11 rounded-full object-cover flex-shrink-0")}</div>`;
+                const hasLiked = post.isLiked === true;
+
+                let replyTagHtml = '';
+                if (post.post_type === 'reply' && post.reply_parent) {
+                    replyTagHtml = `<div class="text-xs text-gray-400 mb-1 bg-[#192734]/30 p-2 rounded border border-dashed border-[#38444d]"><i class="far fa-comment-dots mr-1"></i> Reply to @${post.reply_to} への返信: <span class="text-gray-500 italic">${post.reply_parent.message}</span></div>`;
+                }
+
+                let repostTagHtml = '';
+                if (post.post_type === 'repost' && post.repost_parent) {
+                    repostTagHtml = `
+                        <div class="text-xs text-[#5999FF] mb-1"><i class="fas fa-retweet mr-1"></i> @${post.username} がリポスト/reposted</div>
+                        <div class="bg-zinc-900/40 p-3 rounded-xl border border-[#38444d] my-2 text-sm w-full">
+                           <span class="font-bold text-gray-300">@${post.repost_of}</span>
+                           <p class="text-gray-400 mt-1">${post.repost_parent.message}</p>
+                        </div>`;
+                }
+
+                const postHtml = `
+                    <div class="p-4 hover:bg-[#192734]/40 flex space-x-3 transition w-full">
+                        ${avatarHtml}
+                        <div class="flex-1 min-w-0">
+                            ${post.post_type === 'repost' ? repostTagHtml : ''}
+                            <div class="flex items-center space-x-2 text-sm">
+                                <span onclick="navigateToPage('profile', '${post.username}')" class="font-bold text-white truncate cursor-pointer hover:underline">${post.display_name}</span>
+                                <span onclick="navigateToPage('profile', '${post.username}')" class="text-gray-400 truncate cursor-pointer">@${post.username}</span>
+                                <span class="text-gray-500">·</span>
+                                <span onclick="navigateToPage('post', '${post.id}')" class="text-gray-500 text-xs cursor-pointer hover:underline">${post.timestamp}</span>
+                            </div>
+                            ${post.post_type === 'reply' ? replyTagHtml : ''}
+                            ${post.post_type !== 'repost' ? `<div class="text-white mt-1 break-words whitespace-pre-wrap text-[15px]">${linkify(post.message || '')}</div>` : ''}
+                            
+                            <div class="flex justify-between max-w-md mt-3 text-gray-500 text-sm">
+                                <button onclick="openReplyModal('${post.id}', '${post.username}')" class="hover:text-[#5999FF] transition cursor-pointer flex items-center"><i class="far fa-comment mr-1"></i><span>返信</span></button>
+                                <button onclick="openRepostModal('${post.id}', '${post.username}')" class="hover:text-green-500 transition cursor-pointer flex items-center"><i class="fas fa-retweet mr-1"></i><span>リポスト</span></button>
+                                <button onclick="toggleLike('${post.id}', this)" class="hover:text-pink-500 transition cursor-pointer ${hasLiked ? 'text-pink-500' : ''}" data-liked="${hasLiked}"><i class="${hasLiked ? 'fas' : 'far'} fa-heart mr-1"></i><span>${post.likes || 0}</span></button>
+                                <div class="text-gray-600 flex items-center select-none"><i class="far fa-chart-bar mr-1"></i><span>${post.views || 0}</span></div>
+                            </div>
+                        </div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', postHtml);
+                // ── タイムライン描画処理の末尾（ポスト配列が確定した直後）に追記 ──
+                // posts はタイムラインのポスト配列（各要素に id フィールドがあること）
+                updateViewsForNewPosts(posts);
+            });
+        }
+
+        function submitPost() {
+            const textarea = document.getElementById('post-message');
+            const message = textarea.value.trim();
+            if (!message) return;
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message }) })
+            .then(res => res.json())
+            .then(res => { if (res.success) { textarea.value = ''; document.getElementById('char-count').innerText = "0 / 140"; applyURLRoute(); } });
+        }
+
+        function openReplyModal(postId, username) {
+            const html = `
+                <h3 class="text-lg font-bold mb-3">@${username} へ返信</h3>
+                <textarea id="modal-reply-msg" placeholder="返信を部屋に響かせる..." class="w-full bg-[#15202b] border border-[#38444d] p-3 rounded-xl h-24 text-white outline-none resize-none"></textarea>
+                <div class="flex justify-end mt-3"><button onclick="submitReply('${postId}')" class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full text-sm">返信を送信</button></div>`;
+            openCustomModal(html);
+        }
+        function submitReply(parentPostId) {
+            const message = document.getElementById('modal-reply-msg').value.trim();
+            if (!message) return;
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: message, reply_to: parentPostId, post_type: 'reply' }) })
+            .then(() => { closeCustomModal(); applyURLRoute(); });
+        }
+
+        function openRepostModal(postId, username) {
+            const html = `
+                <h3 class="text-lg font-bold mb-2">リポストしますか？</h3>
+                <div class="flex justify-end space-x-3"><button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">やめる</button><button onclick="submitRepost('${postId}')" class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full text-sm">リポスト</button></div>`;
+            openCustomModal(html);
+        }
+        function submitRepost(targetPostId) {
+            fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'createPost', username: currentUser.username, message: '', repost_of: targetPostId, post_type: 'repost' }) })
+            .then(() => { closeCustomModal(); applyURLRoute(); });
+        }
+
+        function executeLoginAction() {
+            const email    = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'login', email: email, password: password })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    loginSuccess(res.user);
+                } else {
+                    alert('ログイン失敗: ' + res.error);
+                }
+            })
+            .catch(function() {
+                alert('ログイン失敗: ERR_LOGIN_NETWORK_FAILED');
+            });
+        }
+
+// 【検索キーワード】: startRegisterAction
+        // 🤖 【変える部分】非表示reCAPTCHA起動用トリガー（パスワードチェックをしてから起動）
+        function startRegisterAction() {
+            const password = document.getElementById('reg-password').value.trim();
+            const passwordConfirm = document.getElementById('reg-password-confirm').value.trim();
+
+            if (!password || !passwordConfirm) {
+                alert('パスワードと確認用パスワードの両方を入力してください。');
+                return;
+            }
+            if (password !== passwordConfirm) {
+                alert('パスワードと確認用パスワードが一致しません。もう一度ご確認ください。');
+                return;
+            }
+
+            // パスワードが一致していれば、裏で自動的にreCAPTCHAを実行
+            grecaptcha.execute();
+        }
+
+        // 🤖 【変える部分】Googleの認証が成功した時に、自動でGASへ通信を飛ばす関数
+        async function onInvisibleSubmit(token) {
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const birthday = document.getElementById('reg-birth').value;
+            const username = document.getElementById('reg-username').value.trim().replace('@','');
+            let display_name = document.getElementById('reg-display').value.trim() || '新参者';
+            let icon_url = 'assets/logo.png';
+
+            // 📡 GAS（バックエンド）へデータを送信（OPTIONS通信を発生させないシンプルリクエスト版）
+            fetch(GAS_API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    action: 'register', 
+                    username, 
+                    display_name, 
+                    icon_url, 
+                    email, 
+                    password, 
+                    birthday,
+                    recaptchaToken: token 
+                }) 
+            })
+            .then(res => res.json())
+            .then(res => { 
+                if (res.success) { 
+                    loginSuccess(res.user); 
+                } else { 
+                    // 🛡️ 【総監督ルール】原因を直接書かず、エラーコードをそのままポップアップ
+                    alert(res.error); 
+                    grecaptcha.reset(); 
+                } 
+            })
+            .catch(err => {
+                // 🛡️ 【総監督ルール】バグを考慮した共通のエラーコード風メッセージ
+                alert('ERR_CONNECTION_FAILED: 通信エラーが発生しました。');
+                grecaptcha.reset();
+            });
+        }
+
+        function loginSuccess(user) { 
+            currentUser = user; 
+            localStorage.setItem('loggia_user', JSON.stringify(user)); 
+            document.getElementById('auth-gate').classList.add('hidden'); 
+            checkSystemMaintenanceAndRoute(); 
+        }
+        function handleLogout() { if(autoRefreshInterval) clearInterval(autoRefreshInterval); localStorage.removeItem('loggia_user'); location.reload(); }
+        // ▼ デフォルトアイコン
+        const DEFAULT_ICON_URL = "assets/default_avatar.png";
+
+        // ▼ アバター生成
+        // ── w-10 h-10 → w-full h-full に変更してコンテナに追従させる ──
+        function getAvatarHtml(url, css = "w-full h-full rounded-full object-cover") {
+            const avatar = url || DEFAULT_ICON_URL;
+            return `
+                <img
+                    src="${avatar}"
+                    class="${css}"
+                    onerror="this.onerror=null;this.src='${DEFAULT_ICON_URL}'">
+            `;
+        }
+        
+        function updateUserUI() { 
+            if (!currentUser) return; 
+            // ── 要素の存在チェックを追加 ──
+            const navDisplayName = document.getElementById('nav-display-name');
+            if (!navDisplayName) return; // DOM未準備なら即return
+            navDisplayName.innerText = currentUser.display_name || '住人'; // 直接代入に変更
+            document.getElementById('nav-username').innerText = '@' + currentUser.username;
+            document.getElementById('nav-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url); 
+            document.getElementById('form-avatar-container').innerHTML = getAvatarHtml(currentUser.icon_url, "w-12 h-12 rounded-full object-cover"); 
+            
+            // ── Admin ボタンの表示・非表示をロールに応じて切り替え ──
+            if (currentUser.role === 'Admin') {
+                document.getElementById('nav-admin-btn').classList.remove('hidden');
+                document.getElementById('nav-admin-btn-mobile').classList.remove('hidden');
+            } else {
+                // Admin以外はボタンを必ず隠す
+                document.getElementById('nav-admin-btn').classList.add('hidden');
+                document.getElementById('nav-admin-btn-mobile').classList.add('hidden');
+            }
+        }
+        
+        function linkify(text) { 
+            return text.replace(/(https?:\/\/[^\s]+)/g, url => {
+                return `<span onclick="confirmExternalLink('${url}')" class="text-blue-400 hover:underline cursor-pointer"><i class="fas fa-external-link-alt text-xs mr-1"></i>${url}</span>`;
+            }); 
+        }
+        function previewImage(input, pId) { if (input.files[0]) { const r = new FileReader(); r.onload = e => { const p = document.getElementById(pId); p.src = e.target.result; p.classList.remove('hidden'); }; r.readAsDataURL(input.files[0]); } }
+        function toggleLike(pId, btn) { fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'toggleLike', postId: pId, username: currentUser.username }) }).then(res => res.json()).then(res => { if(res.success) applyURLRoute(); }); }
+        function toggleAuthTab(tab) {
+            if(tab === 'login') {
+                document.getElementById('form-login').classList.remove('hidden'); document.getElementById('form-register').classList.add('hidden');
+                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold border-b-2 text-[#5999FF] border-[#5999FF]";
+                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
+            } else {
+                document.getElementById('form-login').classList.add('hidden'); document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('btn-tab-login').className = "w-1/2 pb-2 font-bold text-gray-400 border-b-2 border-transparent";
+                document.getElementById('btn-tab-register').className = "w-1/2 pb-2 font-bold text-[#5999FF] border-[#5999FF]";
+            }
+        }
+                // ─────────────────────────────────────────────
+        // Views 重複カウント防止ユーティリティ
+        // sessionStorage でセッション中の閲覧済みポストIDを管理する
+        // （タブを閉じるとリセットされるので次回は正常にカウントされる）
+        // ─────────────────────────────────────────────
+        const VIEWED_POSTS_KEY = "loggia_viewed_posts"; // sessionStorage のキー名
+
+        // sessionStorage から閲覧済みIDの配列を取得する
+        function getViewedPostIds() {
+        const raw = sessionStorage.getItem(VIEWED_POSTS_KEY);
+        return raw ? JSON.parse(raw) : [];
+        }
+
+        // 閲覧済みとして記録する（Set で重複を自動除去）
+        function markPostsAsViewed(postIds) {
+        const viewed = getViewedPostIds();
+        const merged = [...new Set([...viewed, ...postIds])]; // 重複なし配列に統合
+        sessionStorage.setItem(VIEWED_POSTS_KEY, JSON.stringify(merged));
+        }
+
+        // タイムライン表示後に呼び出す
+        // 未閲覧のポストIDだけ抽出してGASにバッチ送信する
+        function updateViewsForNewPosts(posts) {
+        const allIds = posts.map(p => p.id);                        // 表示中の全ID
+        const viewed = getViewedPostIds();
+        const newIds = allIds.filter(id => !viewed.includes(id));   // 未閲覧IDだけ抽出
+
+        // 全部既読なら通信しない（コスト0）
+        if (newIds.length === 0) return;
+
+        // 先にローカルへ記録（通信失敗時の二重カウント防止）
+        markPostsAsViewed(newIds);
+
+        // GASにバッチ送信（fire-and-forget：UXをブロックしない）
+        fetch(GAS_API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "incrementPostViews", postIds: newIds })
+        }).catch(() => {
+            console.warn("ERR_POST_VIEWS_UPDATE_FAILED: Views の更新に失敗しました");
         });
-    }
+        }
+        // ─────────────────────────────────────────────
+// 設定画面の初期値を現在のユーザー情報で埋める
+// ─────────────────────────────────────────────
+function initSettingsForm() {
+    if (!currentUser) return;
+    document.getElementById('edit-icon-url').value    = currentUser.icon_url     || '';
+    document.getElementById('edit-username').value    = currentUser.username      || '';
+    document.getElementById('edit-display-name').value = currentUser.display_name || '';
+    document.getElementById('edit-bio').value          = currentUser.bio           || '';
+}
+
+// ─────────────────────────────────────────────
+// プロフィール保存
+// ─────────────────────────────────────────────
+function saveProfile() {
+    if (!currentUser) return;
+
+    const newUsername    = document.getElementById('edit-username').value.trim().replace('@', '');
+    const newDisplayName = document.getElementById('edit-display-name').value.trim();
+    const newBio         = document.getElementById('edit-bio').value.trim();
+    const newIconUrl     = document.getElementById('edit-icon-url').value.trim();
+
+    fetch(GAS_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            action:       'updateProfile',
+            username:     currentUser.username,   // 現在のユーザー名（検索キー）
+            newUsername:  newUsername,            // 新しいユーザー名（変更がない場合も送る）
+            display_name: newDisplayName,
+            bio:          newBio,
+            icon_url:     newIconUrl
+        })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+        if (res.success) {
+            // localStorageとcurrentUserを最新情報に更新
+            currentUser = res.user;
+            localStorage.setItem('loggia_user', JSON.stringify(currentUser));
+            updateUserUI();
+            alert('プロフィールを保存しました！');
+        } else {
+            alert('保存失敗: ' + res.error);
+        }
+    })
+    .catch(function() {
+        alert('保存失敗: ERR_PROFILE_NETWORK_FAILED');
+    });
+}
+
+// ─────────────────────────────────────────────
+// アカウント一時停止モーダル
+// ─────────────────────────────────────────────
+function openStopConfirmModal() {
+    const html = `
+        <h3 class="text-lg font-bold text-amber-400 mb-2">
+            <i class="fas fa-moon mr-2"></i>部屋を休眠状態 (Stop) にしますか？
+        </h3>
+        <p class="text-gray-300 text-sm leading-relaxed mb-4">
+            一時停止すると自動的にログアウトされ、他の住人からは「休眠中の住人」と表示されます。<br>
+            <span class="text-amber-300 font-bold">ログインし直すだけで自動的に部屋を完全復活させることができます。</span>
+        </p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
+            <button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button>
+        </div>`;
+    openCustomModal(html);
+}
+
+// ─────────────────────────────────────────────
+// アカウント完全削除モーダル
+// ─────────────────────────────────────────────
+function openDeleteConfirmModal() {
+    const html = `
+        <h3 class="text-lg font-bold text-red-400 mb-2">
+            <i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）
+        </h3>
+        <p class="text-gray-300 text-sm leading-relaxed mb-4">
+            このボタンを押すと、あなたのユーザーデータおよびすべての投稿が
+            <span class="text-red-400 font-bold underline">データベースから跡形もなく完全物理削除</span>されます。
+            二度と元には戻せません。
+        </p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
+            <button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button>
+        </div>`;
+    openCustomModal(html);
+}
+
+// ─────────────────────────────────────────────
+// ステータス変更送信（Stop）
+// ─────────────────────────────────────────────
+function submitChangeStatus(status) {
+    if (!currentUser) return;
+    closeCustomModal();
+
+    fetch(GAS_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            action:   'changeStatus',
+            username: currentUser.username,
+            status:   status
+        })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+        if (res.success) {
+            // Stop したらログアウト
+            currentUser = null;
+            localStorage.removeItem('loggia_user');
+            location.reload();
+        } else {
+            alert('ステータス変更失敗: ' + res.error);
+        }
+    })
+    .catch(function() {
+        alert('ステータス変更失敗: ERR_STATUS_NETWORK_FAILED');
+    });
+}
 
     // ─────────────────────────────────────────────
-    // アカウント一時停止モーダル
+    // アカウント完全削除送信
     // ─────────────────────────────────────────────
-    function openStopConfirmModal() {
-        const html = `
-            <h3 class="text-lg font-bold text-amber-400 mb-2">
-                <i class="fas fa-moon mr-2"></i>部屋を休眠状態 (Stop) にしますか？
-            </h3>
-            <p class="text-gray-300 text-sm leading-relaxed mb-4">
-                一時停止すると自動的にログアウトされ、他の住人からは「休眠中の住人」と表示されます。<br>
-                <span class="text-amber-300 font-bold">ログインし直すだけで自動的に部屋を完全復活させることができます。</span>
-            </p>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
-                <button onclick="submitChangeStatus('Stop')" class="bg-amber-600 text-white font-bold px-5 py-2 rounded-full text-sm">一時停止する</button>
-            </div>`;
-        openCustomModal(html);
-    }
-
-    // ─────────────────────────────────────────────
-    // アカウント完全削除モーダル
-    // ─────────────────────────────────────────────
-    function openDeleteConfirmModal() {
-        const html = `
-            <h3 class="text-lg font-bold text-red-400 mb-2">
-                <i class="fas fa-exclamation-triangle mr-2"></i>全データの完全削除（完全退去）
-            </h3>
-            <p class="text-gray-300 text-sm leading-relaxed mb-4">
-                このボタンを押すと、あなたのユーザーデータおよびすべての投稿が
-                <span class="text-red-400 font-bold underline">データベースから跡形もなく完全物理削除</span>されます。
-                二度と元には戻せません。
-            </p>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeCustomModal()" class="bg-zinc-800 text-white px-4 py-2 rounded-full text-sm">キャンセル</button>
-                <button onclick="submitDeleteAccount()" class="bg-red-600 text-white font-bold px-5 py-2 rounded-full text-sm">すべてを完全に消去する</button>
-            </div>`;
-        openCustomModal(html);
-    }
-
-    // ─────────────────────────────────────────────
-    // ステータス変更送信（Stop）
-    // ─────────────────────────────────────────────
-    function submitChangeStatus(status) {
+    function submitDeleteAccount() {
         if (!currentUser) return;
         closeCustomModal();
 
         fetch(GAS_API_URL, {
             method: 'POST',
             body: JSON.stringify({
-                action:   'changeStatus',
-                username: currentUser.username,
-                status:   status
+                action:   'deleteAccount',
+                username: currentUser.username
             })
         })
         .then(function(res) { return res.json(); })
         .then(function(res) {
             if (res.success) {
-                // Stop したらログアウト
+                // 削除完了したらログアウト
                 currentUser = null;
                 localStorage.removeItem('loggia_user');
                 location.reload();
             } else {
-                alert('ステータス変更失敗: ' + res.error);
+                alert('削除失敗: ' + res.error);
             }
         })
         .catch(function() {
-            alert('ステータス変更失敗: ERR_STATUS_NETWORK_FAILED');
+            alert('削除失敗: ERR_DELETE_NETWORK_FAILED');
         });
     }
+<<<<<<< HEAD
 
         // ─────────────────────────────────────────────
         // アカウント完全削除送信
@@ -1019,5 +1649,8 @@
             });
         }
 </script>
+=======
+    </script>
+>>>>>>> parent of 7c6630b (Update index.html)
 </body>
 </html>
