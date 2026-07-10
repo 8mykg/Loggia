@@ -488,7 +488,20 @@
                 const params = new URLSearchParams(window.location.search);
                 const page = params.get('page') || 'timeline';
                 const id = params.get('id');
+                // ─────────────────────────────────────────────
+                // URLルーティング処理（view-adminの存在チェック安全弁）
+                // ─────────────────────────────────────────────
+                function applyURLRoute() {
+                    // 【検索キーワード】: document.getElementById('view-admin')
 
+                    // 🛡️ 494行目のクラッシュ対策：要素がHTML上に存在するときだけhiddenを追加する
+                    const viewAdmin = document.getElementById('view-admin');
+                    if (viewAdmin) {
+                        viewAdmin.classList.add('hidden');
+                    }
+
+                    // 📝 この後にある他の画面要素（view-homeやview-authなど）の操作に続きます
+                }
                 document.getElementById('view-timeline').classList.add('hidden');
                 document.getElementById('view-settings').classList.add('hidden');
                 document.getElementById('view-admin').classList.add('hidden');
