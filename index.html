@@ -209,6 +209,7 @@
                         <!-- アイコンURL -->
                         <div>
 <<<<<<< HEAD
+<<<<<<< HEAD
                             <label class="block text-gray-400 text-sm mb-1">アイコン / Icon</label>
                             <div class="flex items-center gap-4">
                                 <!-- 現在のアイコンプレビュー -->
@@ -224,6 +225,10 @@
                                     <p class="text-gray-500 text-xs text-center">推奨：1:1・5MB以下</p>
                                 </div>
                             </div>
+=======
+                            <label class="block text-gray-400 text-sm mb-1">アイコンURL / Icon URL</label>
+                            <input type="url" id="edit-icon-url" placeholder="https://..." class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none focus:border-[#5999FF]">
+>>>>>>> parent of 7c6630b (Update index.html)
 =======
                             <label class="block text-gray-400 text-sm mb-1">アイコンURL / Icon URL</label>
                             <input type="url" id="edit-icon-url" placeholder="https://..." class="w-full bg-[#192734] border border-[#38444d] p-2.5 rounded outline-none focus:border-[#5999FF]">
@@ -304,6 +309,7 @@
         let autoRefreshInterval = null;
         let currentMaintenanceState = false; 
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     // ── 修正後の window.onload（handleLoginCheckResult を削除）──
     window.onload = function() {
@@ -924,6 +930,13 @@
             checkSystemMaintenanceAndRoute();
         };
 
+=======
+        // ── 修正後の window.onload（handleLoginCheckResult を削除）──
+        window.onload = function() {
+            checkSystemMaintenanceAndRoute();
+        };
+
+>>>>>>> parent of 7c6630b (Update index.html)
         // // 📝 【検索キーワード】: function checkSystemMaintenanceAndRoute()
         function checkSystemMaintenanceAndRoute() {
             // ── localStorage の読み取りを安全にする（"undefined"文字列対策）──
@@ -934,6 +947,9 @@
             } catch (e) {
                 // 壊れたキャッシュは無視して未ログイン扱いにする
                 localStorage.removeItem('loggia_user');
+<<<<<<< HEAD
+>>>>>>> parent of 7c6630b (Update index.html)
+=======
 >>>>>>> parent of 7c6630b (Update index.html)
             }
             let userParam = cached ? `&username=${encodeURIComponent(cached.username)}` : "";
@@ -1618,6 +1634,7 @@ function submitChangeStatus(status) {
         });
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
         // ─────────────────────────────────────────────
         // アカウント完全削除送信
@@ -1649,6 +1666,9 @@ function submitChangeStatus(status) {
             });
         }
 </script>
+=======
+    </script>
+>>>>>>> parent of 7c6630b (Update index.html)
 =======
     </script>
 >>>>>>> parent of 7c6630b (Update index.html)
