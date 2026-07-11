@@ -376,89 +376,38 @@
                 checkSystemMaintenanceAndRoute();
             };
 
-            // // 📝 【検索キーワード】: function checkSystemMaintenanceAndRoute()
+            // ─────────────────────────────────────────────
+            // 起動時のメンテナンス状態確認と変数への完全同期
+            // ─────────────────────────────────────────────
             function checkSystemMaintenanceAndRoute() {
-                // ── localStorage の読み取りを安全にする（"undefined"文字列対策）──
-                let cached = null;
-                try {
-                    const raw = localStorage.getItem('loggia_user');
-                    cached = (raw && raw !== "undefined") ? JSON.parse(raw) : null;
-                } catch (e) {
-                    // 壊れたキャッシュは無視して未ログイン扱いにする
-                    localStorage.removeItem('loggia_user');
-                }
-                let userParam = cached ? `&username=${encodeURIComponent(cached.username)}` : "";
+                const cached = localStorage.getItem('loggia_user');
+                let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
 
                 fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
-                    .then(res => res.json())
-                    .then(res => {
-                        // ─────────────────────────────────────────────
-                        // メンテナンス確認および状態のグローバル同期
-                        // ─────────────────────────────────────────────
-                        function checkSystemMaintenanceAndRoute() {
-                            const cached = localStorage.getItem('loggia_user');
-                            let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
-
-                            fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
-                                .then(res => res.json())
-                                .then(res => {
-                                    // 🛡️ GASから返ってきた実際のシートの状態（例: res.maintenance が "ON" かどうか）を同期
-                                    if (res && res.maintenance) {
-                                        currentMaintenanceState = (res.maintenance === "ON");
-                                    }
-
-                                    const loader = document.getElementById('global-loading');
-                                    const container = document.getElementById('app-container');
-                                    if (loader) loader.style.display = 'none';
-                                    if (container) container.style.display = 'block';
-
-                                    if (cached) {
-                                        currentUser = JSON.parse(cached);
-                                        applyURLRoute();
-                                    } else {
-                                        // 未ログイン時の処理へ
-                                    }
-                                });
-                        }
-                        // // 🚪 【総監督ルール】コードを書く場所は全て記述。GASから返事が来たので、即座にローディングを解除！
-                        const loader = document.getElementById('global-loading');
-                        const container = document.getElementById('app-container');
-                        if (loader) loader.style.display = 'none'; // // ローディング画面を消し去る！
-                        if (container) container.style.display = 'block'; // // メイン画面をパッと出す！
-                        // ↓ ここを追加（DOMが確実に表示された後に処理を走らせる）
-                        if (!document.getElementById('nav-display-name')) {
-                            console.error("ERR_DOM_NOT_READY");
-                            return;
-                        }
-                        // ── 同関数内の cached 参照箇所も統一 ──
-                        if (cached) currentUser = cached; // ← JSON.parse不要（上で既にパース済み）
-
-                        if (res.maintenance === "ON" && !res.bypass) {
-                            document.getElementById('maintenance-gate').classList.remove('hidden');
-                            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-                            return;
-                        }
-
-                        document.getElementById('maintenance-gate').classList.add('hidden');
-                        currentMaintenanceState = (res.maintenance === "ON");
-                        updateAdminPanelUI();
-
-                        if (cached) {
-                            updateUserUI();
-                            applyURLRoute();
-                            startAutoRefresh();
+                    .then(function (res) { return res.json(); })
+                    .then(function (res) {
+                        // バックエンドのスプレッドシートから返ってきた文字列（ON/OFF）を正確に検証
+                        if (res && res.success && res.maintenance) {
+                            currentMaintenanceState = (res.maintenance === "ON");
                         } else {
-                            document.getElementById('auth-gate').classList.remove('hidden');
+                            currentMaintenanceState = false;
                         }
-                    })
-                    .catch(function (err) {
-                        console.error("ERR_MAINTENANCE_CHECK_FAILED", err);
+
                         const loader = document.getElementById('global-loading');
                         const container = document.getElementById('app-container');
                         if (loader) loader.style.display = 'none';
                         if (container) container.style.display = 'block';
-                        // 通信失敗時は auth-gate を直接表示（showAuthPage関数は不要）
-                        document.getElementById('auth-gate').classList.remove('hidden');
+
+                        if (cached) {
+                            currentUser = JSON.parse(cached);
+                            applyURLRoute();
+                        } else {
+                            // 未ログイン時のルーティング処理など
+                            applyURLRoute();
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error("ERR_MAINTENANCE_CHECK_FAILED:", err);
                     });
             }
 
