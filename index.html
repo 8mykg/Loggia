@@ -324,7 +324,8 @@
                             </button>
                         </div>
                     </div>
-
+                </section>
+                <section id="view-admin" class="hidden p-6 space-y-8">
                     <div class="bg-[#192734] border border-[#38444d] rounded-lg p-5 max-w-md mx-auto mt-6">
                         <h3 class="text-white font-bold text-lg mb-2">システムメンテナンス管理</h3>
                         <p class="text-gray-400 text-sm mb-4">有効にすると、一般ユーザーは通行止め画面にリダイレクトされます。</p>
@@ -334,6 +335,7 @@
                             読込中...
                         </button>
                     </div>
+                </section>
             </main>
         </div>
         <footer
@@ -385,39 +387,30 @@
                     .then(res => res.json())
                     .then(res => {
                         // ─────────────────────────────────────────────
-                        // メンテナンス確認および画面遷移制御（デバッグログ強化版）
+                        // メンテナンス確認および状態のグローバル同期
                         // ─────────────────────────────────────────────
                         function checkSystemMaintenanceAndRoute() {
                             const cached = localStorage.getItem('loggia_user');
                             let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
 
-                            // 検証ログ1: ローカルストレージの中身を確認
-                            console.log("Loggia_Route_Debug: cached_user =", cached);
-
                             fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
                                 .then(res => res.json())
                                 .then(res => {
-                                    // 検証ログ2: GASから返ってきたシステム状態とメンテ状態を確認
-                                    console.log("Loggia_Route_Debug: GAS_Response =", res);
+                                    // 🛡️ GASから返ってきた実際のシートの状態（例: res.maintenance が "ON" かどうか）を同期
+                                    if (res && res.maintenance) {
+                                        currentMaintenanceState = (res.maintenance === "ON");
+                                    }
 
                                     const loader = document.getElementById('global-loading');
                                     const container = document.getElementById('app-container');
                                     if (loader) loader.style.display = 'none';
                                     if (container) container.style.display = 'block';
 
-                                    // ⚠️ ここから下の既存のif文（画面分岐）の条件式をチェックしてください
-                                    // もしGAS側がメンテ中でないと判定しているにもかかわらずログイン画面に戻る場合、
-                                    // 以下の「cached（ローカルストレージ）」の有無や、変数 currentUser への代入処理で脱線しています
                                     if (cached) {
                                         currentUser = JSON.parse(cached);
-
-                                        // 例: 既存のホーム画面描画関数（実際の関数名に合わせてください）
-                                        // showHomePage(currentUser); 
-                                        console.log("Loggia_Route_Debug: ログイン中としてホーム画面を描画します");
+                                        applyURLRoute();
                                     } else {
-                                        // ローカルストレージが空、またはパースに失敗した場合にここへ落ちます
-                                        // showAuthPage();
-                                        console.warn("Loggia_Route_Debug: ユーザーデータがないためログイン画面へ強制移行しました");
+                                        // 未ログイン時の処理へ
                                     }
                                 });
                         }
@@ -532,9 +525,9 @@
                 } else if (page === 'settings') {
                     if (viewSettings) viewSettings.classList.remove('hidden');
                     initSettingsForm();
-                // ─────────────────────────────────────────────
-                // URLルーティング処理（admin表示時のUI初期化連動）
-                // ─────────────────────────────────────────────
+                    // ─────────────────────────────────────────────
+                    // URLルーティング処理（admin表示時のUI初期化連動）
+                    // ─────────────────────────────────────────────
                 } else if (page === 'admin' && currentUser?.role === 'Admin') {
                     if (viewAdmin) viewAdmin.classList.remove('hidden');
                     // 管理室を開いた瞬間に、現在の状態に合わせたボタン表示にする
