@@ -325,17 +325,23 @@
                         </div>
                     </div>
                 </section>
-                <section id="view-admin" class="hidden p-6 space-y-8">
-                            <div class="bg-[#192734] border border-[#38444d] rounded-lg p-5 max-w-md mx-auto mt-6">
-                                <h3 class="text-white font-bold text-lg mb-2">システムメンテナンス管理</h3>
-                                <p class="text-gray-400 text-sm mb-4">有効にすると、一般ユーザーは通行止め画面にリダイレクトされます。</p>
+                <div id="view-admin" class="hidden min-h-screen bg-[#15202B] text-white p-4">
+                    <div class="max-w-md mx-auto mb-4 flex items-center justify-between border-b border-[#38444d] pb-3">
+                        <h2 class="text-xl font-bold">Loggia 管理室</h2>
+                        <button onclick="navigateToPage('timeline')"
+                            class="text-sm text-[#5999FF] hover:underline">タイムラインへ戻る</button>
+                    </div>
 
-                                <button id="btn-toggle-maint" onclick="toggleMaintenanceMode()"
-                                    class="w-full bg-[#5999FF] text-white py-2.5 rounded font-bold hover:bg-[#4685E6] transition-colors">
-                                    読込中...
-                                </button>
-                            </div>
-                </section>
+                    <div class="bg-[#192734] border border-[#38444d] rounded-lg p-5 max-w-md mx-auto mt-6">
+                        <h3 class="text-white font-bold text-lg mb-2">システムメンテナンス管理</h3>
+                        <p class="text-gray-400 text-sm mb-4">有効にすると、一般ユーザーは通行止め画面にリダイレクトされます。</p>
+
+                        <button id="btn-toggle-maint" onclick="toggleMaintenanceMode()"
+                            class="w-full bg-[#5999FF] text-white py-2.5 rounded font-bold hover:bg-[#4685E6] transition-colors">
+                            読込中...
+                        </button>
+                    </div>
+                </div>
             </main>
         </div>
         <footer
