@@ -532,8 +532,13 @@
                 } else if (page === 'settings') {
                     if (viewSettings) viewSettings.classList.remove('hidden');
                     initSettingsForm();
+                // ─────────────────────────────────────────────
+                // URLルーティング処理（admin表示時のUI初期化連動）
+                // ─────────────────────────────────────────────
                 } else if (page === 'admin' && currentUser?.role === 'Admin') {
                     if (viewAdmin) viewAdmin.classList.remove('hidden');
+                    // 管理室を開いた瞬間に、現在の状態に合わせたボタン表示にする
+                    updateAdminPanelUI();
                 } else {
                     navigateToPage('timeline');
                 }
