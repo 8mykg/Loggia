@@ -484,18 +484,15 @@
                     });
             }
 
+            // ─────────────────────────────────────────────
+            // URLルーティング処理（構造の整理・完全安全弁版）
+            // ─────────────────────────────────────────────
             function applyURLRoute() {
                 const params = new URLSearchParams(window.location.search);
                 const page = params.get('page') || 'timeline';
                 const id = params.get('id');
-                // ─────────────────────────────────────────────
-                // URLルーティング処理（すべてのclassList操作を安全化）
-                // ─────────────────────────────────────────────
-                function applyURLRoute() {
-                // ─────────────────────────────────────────────
-                // URLルーティング処理（条件分岐・UI操作の完全安全化版）
-                // ─────────────────────────────────────────────
-                // 一旦すべてを非表示にするフェーズ（要素が存在する場合のみ実行）
+
+                // 一旦すべてを非表示にするフェーズ（要素が存在する場合のみ安全に実行）
                 const viewTimeline = document.getElementById('view-timeline');
                 if (viewTimeline) viewTimeline.classList.add('hidden');
 
@@ -538,37 +535,9 @@
                     if (viewAdmin) viewAdmin.classList.remove('hidden');
                 } else {
                     navigateToPage('timeline');
-                }}
-                document.getElementById('view-timeline').classList.add('hidden');
-                document.getElementById('view-settings').classList.add('hidden');
-                document.getElementById('view-admin').classList.add('hidden');
-                document.getElementById('profile-card-area').classList.add('hidden');
-                document.getElementById('global-back-btn').classList.add('hidden');
-                document.getElementById('timeline-post-box').classList.remove('hidden');
-                document.getElementById('feed-header-title').innerText = "Loggia の「今」";
-                if (page === 'timeline') {
-                    document.getElementById('view-timeline').classList.remove('hidden');
-                    loadTimelineFeed();
-                } else if (page === 'profile' && id) {
-                    document.getElementById('view-timeline').classList.remove('hidden');
-                    document.getElementById('timeline-post-box').classList.add('hidden');
-                    document.getElementById('global-back-btn').classList.remove('hidden');
-                    renderProfileCard(id);
-                } else if (page === 'post' && id) {
-                    document.getElementById('view-timeline').classList.remove('hidden');
-                    document.getElementById('global-back-btn').classList.remove('hidden');
-                    document.getElementById('feed-header-title').innerText = "つぶやきの詳細";
-                    loadSinglePost(id);
-                } else if (page === 'settings') {
-                    document.getElementById('view-settings').classList.remove('hidden');
-                    initSettingsForm();
-                } else if (page === 'admin' && currentUser?.role === 'Admin') {
-                    document.getElementById('view-admin').classList.remove('hidden');
-                } else {
-                    navigateToPage('timeline');
                 }
             }
-
+            
             function navigateToPage(pageName, id = null) {
                 let newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
                 let query = `?page=${pageName}`;
