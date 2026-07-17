@@ -412,7 +412,7 @@
                     
                     // アイコン画像（または初期アバター）の描画
                     if (avatarContainer) {
-                        const avatarUrl = currentUser.avatarUrl || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                        const avatarUrl = currentUser.avatarUrl || "assets/default_avatar.png";
                         avatarContainer.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="avatar">`;
                     }
                 } else {
