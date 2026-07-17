@@ -371,11 +371,59 @@
             let autoRefreshInterval = null;
             let currentMaintenanceState = false;
 
-            // ── 修正後の window.onload（handleLoginCheckResult を削除）──
+            // アプリ起動時の最優先処理
             window.onload = function () {
+                // ① まず何よりも先にストレージからユーザー情報を変数に入れる
+                const cached = localStorage.getItem('loggia_user');
+                if (cached) {
+                    try {
+                        currentUser = JSON.parse(cached);
+                    } catch (e) {
+                        currentUser = null;
+                    }
+                } else {
+                    currentUser = null;
+                }
+
+                // ② ユーザー情報がセットされたので、即座に左下のUI（guest表記など）を更新する
+                if (typeof updateProfileUI === 'function') {
+                    updateProfileUI(); // ※お使いのシステムにおける左下UI更新関数をここで叩く
+                }
+
+                // ③ 最後に、メンテナンスチェックと画面交通整理にバトンを渡す
                 checkSystemMaintenanceAndRoute();
             };
+            // ─────────────────────────────────────────────
+            // 左下プロフィールエリアのUI更新処理（新設）
+            // ─────────────────────────────────────────────
+            function updateProfileUI() {
+                const avatarContainer = document.getElementById('nav-avatar-container');
+                const displayNameEl = document.getElementById('nav-display-name');
+                const usernameEl = document.getElementById('nav-username');
 
+                if (currentUser) {
+                    // ログイン中の場合：ユーザー情報を反映
+                    if (displayNameEl) {
+                        displayNameEl.innerText = currentUser.displayName || currentUser.username || "名無しさん";
+                    }
+                    if (usernameEl) {
+                        usernameEl.innerText = "@" + (currentUser.username || "guest");
+                    }
+                    
+                    // アイコン画像（または初期アバター）の描画
+                    if (avatarContainer) {
+                        const avatarUrl = currentUser.avatarUrl || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                        avatarContainer.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="avatar">`;
+                    }
+                } else {
+                    // ゲスト（未ログイン）の場合：初期状態に戻す
+                    if (displayNameEl) displayNameEl.innerText = "ゲスト";
+                    if (usernameEl) usernameEl.innerText = "@guest";
+                    if (avatarContainer) {
+                        avatarContainer.innerHTML = `<div class="w-full h-full bg-[#38444d] flex items-center justify-center text-gray-400"><i class="fas fa-user text-xs"></i></div>`;
+                    }
+                }
+            }
             // ─────────────────────────────────────────────
             // 起動時のメンテナンス確認およびユーザー情報の完全同期
             // ─────────────────────────────────────────────
