@@ -588,6 +588,9 @@
                 }
             }
 
+            // ─────────────────────────────────────────────
+            // メンテナンス切り替え実行と変数同期の補強
+            // ─────────────────────────────────────────────
             function toggleMaintenanceMode() {
                 if (!currentUser || currentUser.role !== 'Admin') return;
                 const targetState = currentMaintenanceState ? "OFF" : "ON";
@@ -606,19 +609,20 @@
                         state: targetState
                     })
                 })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.success) {
-                            currentMaintenanceState = (targetState === "ON");
+                    .then(function (res) { return res.json(); })
+                    .then(function (res) {
+                        if (res.success && res.maintenance) {
+                            // GAS側（B1セル）に書き込まれて返ってきた実際の値で変数状態を確定させる
+                            currentMaintenanceState = (res.maintenance === "ON");
                             updateAdminPanelUI();
                         } else {
-                            alert("変更失敗: " + res.error);
+                            alert("変更失敗: " + (res.error || "ERR_UNKNOWN"));
                         }
                     })
-                    .catch(() => {
+                    .catch(function () {
                         alert("通信に失敗しました");
                     })
-                    .finally(() => {
+                    .finally(function () {
                         if (btn) {
                             btn.disabled = false;
                             btn.style.opacity = "1";
