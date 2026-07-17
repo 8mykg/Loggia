@@ -377,7 +377,7 @@
             };
 
             // ─────────────────────────────────────────────
-            // 起動時のメンテナンス状態確認と変数への完全同期
+            // 起動時のメンテナンス確認（通信エラーハンドリング強化版）
             // ─────────────────────────────────────────────
             function checkSystemMaintenanceAndRoute() {
                 const cached = localStorage.getItem('loggia_user');
@@ -386,7 +386,6 @@
                 fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
                     .then(function (res) { return res.json(); })
                     .then(function (res) {
-                        // バックエンドのスプレッドシートから返ってきた文字列（ON/OFF）を正確に検証
                         if (res && res.success && res.maintenance) {
                             currentMaintenanceState = (res.maintenance === "ON");
                         } else {
@@ -402,12 +401,22 @@
                             currentUser = JSON.parse(cached);
                             applyURLRoute();
                         } else {
-                            // 未ログイン時のルーティング処理など
                             applyURLRoute();
                         }
                     })
                     .catch(function (err) {
+                        // 🛡️ 通信失敗時（Failed to fetch）でも必ずローディングを解除して画面を出す安全弁
+                        const loader = document.getElementById('global-loading');
+                        const container = document.getElementById('app-container');
+                        if (loader) loader.style.display = 'none';
+                        if (container) container.style.display = 'block';
+
+                        // 画面上に通信エラーが発生している旨を警告表示
                         console.error("ERR_MAINTENANCE_CHECK_FAILED:", err);
+                        alert("GASへの通信に失敗しました。GAS_API_URLが正しいか、デプロイ設定を確認してください。\nエラー内容: " + err.message);
+
+                        // 通信が失敗した場合は安全のため未ログイン扱いでルーティングを走らせる
+                        applyURLRoute();
                     });
             }
 
