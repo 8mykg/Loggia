@@ -409,7 +409,7 @@
                     if (usernameEl) {
                         usernameEl.innerText = "@" + (currentUser.username || "guest");
                     }
-                    
+
                     // アイコン画像（または初期アバター）の描画
                     if (avatarContainer) {
                         const avatarUrl = currentUser.avatarUrl || "assets/default_avatar.png";
@@ -423,6 +423,30 @@
                         avatarContainer.innerHTML = `<div class="w-full h-full bg-[#38444d] flex items-center justify-center text-gray-400"><i class="fas fa-user text-xs"></i></div>`;
                     }
                 }
+            }
+            // ─────────────────────────────────────────────
+            // 起動時に全ユーザー情報を一括同期してキャッシュに格納
+            // ─────────────────────────────────────────────
+            function loadAllUserProfilesToCache() {
+                return fetch(`${GAS_API_URL}?action=getAllUserProfiles`)
+                    .then(function (res) { return res.json(); })
+                    .then(function (res) {
+                        if (res && res.success && res.users) {
+                            // フロントで保持している全ユーザーのキャッシュ変数（userCache 等）に流し込む
+                            // ※お使いの変数名に合わせて代入してください
+                            if (typeof userCache !== 'undefined') {
+                                userCache = res.users;
+                            } else if (typeof allUsers !== 'undefined') {
+                                allUsers = res.users;
+                            } else {
+                                // 変数名が不明な場合のフォールバック（ウィンドウ直下に格納）
+                                window.userCache = res.users;
+                            }
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error("ユーザーキャッシュ同期失敗:", err);
+                    });
             }
             // ─────────────────────────────────────────────
             // 起動時のメンテナンス確認およびユーザー情報の完全同期
