@@ -404,7 +404,7 @@
                 if (currentUser) {
                     // ログイン中の場合：ユーザー情報を反映
                     if (displayNameEl) {
-                        displayNameEl.innerText = currentUser.displayName || currentUser.username || "名無しさん";
+                        displayNameEl.innerText = currentUser.displayName || "ゲスト";
                     }
                     if (usernameEl) {
                         usernameEl.innerText = "@" + (currentUser.username || "guest");
