@@ -246,7 +246,7 @@
                                 class="w-full bg-transparent text-xl outline-none resize-none h-24 pt-1"
                                 maxlength="140"></textarea>
                             <div class="flex justify-between items-center pt-2 border-t border-[#38444d] mt-2">
-                                <span class="text-sm text-gray-500" id="char-count">0 / 10000</span>
+                                <span class="text-sm text-gray-500" id="char-count">0 / 1000</span>
                                 <button id="btn-post-submit" onclick="submitPost()"
                                     class="bg-[#5999FF] text-white font-bold px-5 py-2 rounded-full cursor-pointer hover:opacity-90 flex items-center">
                                     <span>投稿/Post!</span>
@@ -377,11 +377,24 @@
             };
 
             // ─────────────────────────────────────────────
-            // 起動時のメンテナンス確認（誤アラート防止・ノイズ除去版）
+            // 起動時のメンテナンス確認およびユーザー情報の完全同期
             // ─────────────────────────────────────────────
             function checkSystemMaintenanceAndRoute() {
                 const cached = localStorage.getItem('loggia_user');
-                let userParam = cached ? `&username=${JSON.parse(cached).username}` : "";
+
+                // 🛡️ キャッシュが存在すれば、まず最初に currentUser にパースして格納する（ゲスト化を防ぐ）
+                if (cached) {
+                    try {
+                        currentUser = JSON.parse(cached);
+                    } catch (e) {
+                        console.error("ユーザーキャッシュの解析に失敗しました:", e);
+                        currentUser = null;
+                    }
+                } else {
+                    currentUser = null;
+                }
+
+                let userParam = currentUser ? `&username=${currentUser.username}` : "";
 
                 fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
                     .then(function (res) {
@@ -389,11 +402,9 @@
                         return res.json();
                     })
                     .then(function (res) {
-                        // 🛡️ レスポンスが存在し、successがtrue（または直接取得できている）なら同期成功とみなす
                         if (res && res.success) {
                             currentMaintenanceState = (res.maintenance === "ON");
                         } else if (res && res.maintenance) {
-                            // successキーが無くても、maintenanceの値が入っていれば救済して同期
                             currentMaintenanceState = (res.maintenance === "ON");
                         } else {
                             currentMaintenanceState = false;
@@ -404,24 +415,23 @@
                         if (loader) loader.style.display = 'none';
                         if (container) container.style.display = 'block';
 
-                        if (cached) {
-                            currentUser = JSON.parse(cached);
-                            applyURLRoute();
-                        } else {
-                            applyURLRoute();
+                        // 🛡️ 同期した currentUser の状態を維持してルーティングへ流す
+                        applyURLRoute();
+
+                        // 左下のプロフ等、UI全体の表示更新関数があればここで呼び出す（例: updateUI() など）
+                        if (typeof updateProfileUI === 'function') {
+                            updateProfileUI();
                         }
                     })
                     .catch(function (err) {
-                        // 本当の通信切断（オフラインやURL間違いなど）の時だけ動く安全弁
                         const loader = document.getElementById('global-loading');
                         const container = document.getElementById('app-container');
                         if (loader) loader.style.display = 'none';
                         if (container) container.style.display = 'block';
 
                         console.warn("MAINTENANCE_FETCH_FALLBACK:", err);
-
-                        // エラーダイアログは出さずに、サイレントにOFF扱いで画面を開通させる
                         currentMaintenanceState = false;
+
                         applyURLRoute();
                     });
             }
