@@ -394,7 +394,7 @@
                 checkSystemMaintenanceAndRoute();
             };
             // ─────────────────────────────────────────────
-            // 左下プロフィールエリアのUI更新処理（新設）
+            // 左下プロフィールエリアのUI更新処理（データキー同期版）
             // ─────────────────────────────────────────────
             function updateProfileUI() {
                 const avatarContainer = document.getElementById('nav-avatar-container');
@@ -402,25 +402,25 @@
                 const usernameEl = document.getElementById('nav-username');
 
                 if (currentUser) {
-                    // ログイン中の場合：ユーザー情報を反映
+                    // 🛡️ GAS側のキー名（display_name / icon_url）でも受け取れるようにフォールバックを設定
+                    const dName = currentUser.displayName || currentUser.display_name || "ゲスト";
+                    const uName = currentUser.username || "guest";
+                    const avUrl = currentUser.avatarUrl || currentUser.icon_url || "assets/default_avatar.png";
+
                     if (displayNameEl) {
-                        displayNameEl.innerText = currentUser.displayName || "ゲスト";
+                        displayNameEl.innerText = dName;
                     }
                     if (usernameEl) {
-                        usernameEl.innerText = "@" + (currentUser.username || "guest");
+                        usernameEl.innerText = "@" + uName;
                     }
-
-                    // アイコン画像（または初期アバター）の描画
                     if (avatarContainer) {
-                        const avatarUrl = currentUser.avatarUrl || "assets/default_avatar.png";
-                        avatarContainer.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover" alt="avatar">`;
+                        avatarContainer.innerHTML = `<img src="${avUrl}" class="w-full h-full object-cover" alt="avatar">`;
                     }
                 } else {
-                    // ゲスト（未ログイン）の場合：初期状態に戻す
                     if (displayNameEl) displayNameEl.innerText = "ゲスト";
                     if (usernameEl) usernameEl.innerText = "@guest";
                     if (avatarContainer) {
-                        avatarContainer.innerHTML = `<div class="w-full h-full bg-[#38444d] flex items-center justify-center text-gray-400"><i class="fas fa-user text-xs"></i></div>`;
+                        avatarContainer.innerHTML = `<img src="assets/default_avatar.png" class="w-full h-full object-cover" alt="avatar">`;
                     }
                 }
             }
