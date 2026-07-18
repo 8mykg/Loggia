@@ -452,21 +452,34 @@
             // 起動時のメンテナンス確認およびユーザー情報の完全同期
             // ─────────────────────────────────────────────
             function checkSystemMaintenanceAndRoute() {
+                // 1. window.onload側でも二重で入れていますが、ここでも変数にユーザー情報を確定
                 const cached = localStorage.getItem('loggia_user');
-
-                // 🛡️ キャッシュが存在すれば、まず最初に currentUser にパースして格納する（ゲスト化を防ぐ）
                 if (cached) {
                     try {
                         currentUser = JSON.parse(cached);
                     } catch (e) {
-                        console.error("ユーザーキャッシュの解析に失敗しました:", e);
                         currentUser = null;
                     }
                 } else {
                     currentUser = null;
                 }
 
-                let userParam = currentUser ? `&username=${currentUser.username}` : "";
+                // 🛡️ 【シークレットモード対策】未ログインならGAS通信を待たずにログイン画面へ強制送還
+                if (!currentUser) {
+                    const loader = document.getElementById('global-loading');
+                    const container = document.getElementById('app-container');
+                    if (loader) loader.style.display = 'none';
+                    if (container) container.style.display = 'block';
+
+                    // ログイン登録画面へ遷移（お使いの遷移関数を実行）
+                    if (typeof navigateToPage === 'function') {
+                        navigateToPage('login');
+                    }
+                    return;
+                }
+
+                // ログイン状態であればGASへ通信開始
+                let userParam = `&username=${currentUser.username}`;
 
                 fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
                     .then(function (res) {
@@ -474,10 +487,13 @@
                         return res.json();
                     })
                     .then(function (res) {
-                        if (res && res.success) {
+                        if (res && (res.success || res.maintenance)) {
                             currentMaintenanceState = (res.maintenance === "ON");
-                        } else if (res && res.maintenance) {
-                            currentMaintenanceState = (res.maintenance === "ON");
+
+                            // 🛡️ 右上の同期表示を「同期完了」側へ更新する（関数名はお使いのシステムに合わせてください）
+                            if (typeof updateSyncStatusUI === 'function') {
+                                updateSyncStatusUI(true);
+                            }
                         } else {
                             currentMaintenanceState = false;
                         }
@@ -487,10 +503,8 @@
                         if (loader) loader.style.display = 'none';
                         if (container) container.style.display = 'block';
 
-                        // 🛡️ 同期した currentUser の状態を維持してルーティングへ流す
                         applyURLRoute();
 
-                        // 左下のプロフ等、UI全体の表示更新関数があればここで呼び出す（例: updateUI() など）
                         if (typeof updateProfileUI === 'function') {
                             updateProfileUI();
                         }
@@ -503,6 +517,11 @@
 
                         console.warn("MAINTENANCE_FETCH_FALLBACK:", err);
                         currentMaintenanceState = false;
+
+                        // 🛡️ 通信失敗時のみ「同期不可」の状態にする
+                        if (typeof updateSyncStatusUI === 'function') {
+                            updateSyncStatusUI(false);
+                        }
 
                         applyURLRoute();
                     });
