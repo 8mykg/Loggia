@@ -449,7 +449,7 @@
                     });
             }
             // ─────────────────────────────────────────────
-            // 起動時のメンテナンス確認およびユーザー情報の完全同期（同期状態完全連動版）
+            // 起動時のメンテナンス確認（同期ステータス強制開通版）
             // ─────────────────────────────────────────────
             function checkSystemMaintenanceAndRoute() {
                 const cached = localStorage.getItem('loggia_user');
@@ -479,17 +479,17 @@
 
                 fetch(`${GAS_API_URL}?action=checkMaintenance${userParam}`)
                     .then(function (res) {
+                        // 通信自体が成立していれば、ここで必ず「同期中（緑）」を最優先で叩き込む
+                        if (typeof setSyncStatus === 'function') {
+                            setSyncStatus(true);
+                        }
                         if (!res.ok) throw new Error("HTTP_ERROR_" + res.status);
                         return res.json();
                     })
                     .then(function (res) {
-                        if (res && (res.success || res.maintenance)) {
-                            currentMaintenanceState = (res.maintenance === "ON");
-
-                            // 🛡️ 正しい関数名に修正（通信成功のため「自動同期中」の緑表示にする）
-                            if (typeof setSyncStatus === 'function') {
-                                setSyncStatus(true);
-                            }
+                        // メンテナンス状態の判定（中身の安全弁）
+                        if (res && (res.maintenance === "ON" || res.maintenance === true)) {
+                            currentMaintenanceState = true;
                         } else {
                             currentMaintenanceState = false;
                         }
@@ -514,7 +514,7 @@
                         console.warn("MAINTENANCE_FETCH_FALLBACK:", err);
                         currentMaintenanceState = false;
 
-                        // 🛡️ 正しい関数名に修正（通信失敗時のみ赤の「同期不可」にする）
+                        // ⚠️ 完全にサーバーが落ちている、URLが違うなど「本当の通信エラー」の時だけ赤にする
                         if (typeof setSyncStatus === 'function') {
                             setSyncStatus(false);
                         }
